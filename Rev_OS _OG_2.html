@@ -1,0 +1,2006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cX RevOS · SLB Commercial Reservoir</title>
+  <style>
+:root {
+  color-scheme: light;
+
+  --bg: #f5f6f8;
+  --card: #ffffff;
+  --card-soft: #fafbfc;
+  --ink: #1d2939;
+  --ink-2: #475467;
+  --ink-3: #98a2b3;
+  --line: #e6e8ec;
+  --line-soft: #eef0f3;
+
+  --accent: #344054;
+
+  --good: #12805c;  --good-bg: #e7f4ee;
+  --warn: #b54708;  --warn-bg: #fdf3e7;
+  --bad:  #b42318;  --bad-bg:  #fef0ef;
+  --neutral: #667085; --neutral-bg: #f2f4f7;
+
+  --radius: 14px;
+  --radius-sm: 10px;
+  --shadow: 0 1px 2px rgba(16,24,40,.05), 0 1px 3px rgba(16,24,40,.04);
+  --shadow-card: 0 1px 2px rgba(16,24,40,.04), 0 6px 16px rgba(16,24,40,.05);
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.app { max-width: 1200px; margin: 0 auto; padding: 20px 24px 56px; }
+
+/* ===================== Dynamics 365 host shell ===================== */
+.shell { display: flex; flex-direction: column; min-height: 100vh; background: var(--bg); }
+
+.appbar { display: flex; align-items: center; gap: 14px; height: 48px; padding: 0 10px 0 6px; background: #0a1f33; color: #eaf1f8; flex-shrink: 0; }
+.appbar svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+.appbar-left { display: flex; align-items: center; gap: 8px; }
+.d365-waffle { background: none; border: none; padding: 9px; cursor: pointer; display: flex; border-radius: 4px; }
+.d365-waffle:hover { background: rgba(255,255,255,.10); }
+.waffle { display: grid; grid-template-columns: repeat(3, 3px); grid-auto-rows: 3px; gap: 2px; }
+.waffle i { width: 3px; height: 3px; background: #cdd9e6; border-radius: 1px; display: block; }
+.appbar-brand { font-size: 15px; font-weight: 600; }
+.appbar-divider { width: 1px; height: 22px; background: #2f445f; }
+.appbar-area { font-size: 14px; color: #cbd6e4; }
+.appbar-search { flex: 1; max-width: 520px; margin: 0 auto; height: 32px; border-radius: 4px; background: #13283f; border: 1px solid #284058; display: flex; align-items: center; gap: 8px; padding: 0 10px; color: #8ea3bd; font-size: 13px; }
+.appbar-right { display: flex; align-items: center; gap: 2px; }
+.appbar-ico { background: none; border: none; color: #dbe6f2; width: 32px; height: 32px; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.appbar-ico:hover { background: rgba(255,255,255,.10); }
+.appbar-avatar { width: 28px; height: 28px; border-radius: 50%; background: #8764b8; color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-left: 8px; }
+
+.shell-body { display: flex; flex: 1; min-height: 0; }
+
+.rail { width: 224px; flex-shrink: 0; background: #f6f6f6; border-right: 1px solid #e3e3e3; padding: 6px 0 16px; overflow-y: auto; font-size: 13.5px; }
+.rail svg { width: 16px; height: 16px; fill: none; stroke: #4a4a4a; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.rail-collapse { background: none; border: none; padding: 8px 10px; margin: 2px 8px 4px; cursor: pointer; color: #4a4a4a; border-radius: 4px; display: flex; }
+.rail-collapse:hover { background: #ececec; }
+.rail-item { display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 13px; color: #242424; cursor: pointer; border-left: 3px solid transparent; text-decoration: none; }
+.rail-item:hover { background: #ededed; }
+.rail-item .chev { margin-left: auto; color: #909090; font-size: 15px; line-height: 1; }
+.rail-item.active { background: #e7eef7; border-left-color: #0f6cbd; font-weight: 600; }
+.rail-item.active svg { stroke: #0f6cbd; }
+.rail-group { font-size: 11px; font-weight: 600; color: #5f5f5f; padding: 13px 14px 4px; }
+.rail-area { margin-top: 14px; padding: 11px 14px 0; border-top: 1px solid #e3e3e3; display: flex; align-items: center; justify-content: space-between; font-weight: 600; color: #242424; }
+.rail-area .updown { stroke: #909090; }
+
+.workspace { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--bg); }
+
+.ws-cmdbar { display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 18px; background: #fff; border-bottom: 1px solid var(--line); }
+.ws-appicon { width: 24px; height: 24px; border-radius: 5px; background: linear-gradient(135deg, #0f6cbd, #2a9bd8); color: #fff; font-weight: 800; font-size: 11px; letter-spacing: -.02em; display: flex; align-items: center; justify-content: center; }
+.ws-appname { font-size: 14.5px; font-weight: 700; color: var(--ink); }
+.ws-pin { color: var(--ink-3); display: flex; }
+.ws-pin svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.4; }
+.ws-cmd-spacer { flex: 1; }
+
+.ws-func { font-size: 12.5px; color: var(--ink-2); background: #fff; border: 1px solid var(--line); border-radius: 4px; padding: 6px 11px; cursor: pointer; font-family: inherit; }
+.ws-func b { color: var(--ink); font-weight: 600; }
+.ws-func .caret { color: var(--ink-3); margin-left: 5px; }
+.ws-cmdbar .upload-btn { background: #0f6cbd; border-radius: 4px; padding: 7px 14px; }
+.ws-cmdbar .upload-btn:hover { background: #0c5aa0; }
+
+.ws-header, .ws-chips, .ws-modes, .ws-body { padding-left: 24px; padding-right: 24px; }
+.ws-header { padding-top: 20px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.ws-title h1 { margin: 0; font-size: 21px; font-weight: 700; letter-spacing: -.01em; }
+.ws-title p { margin: 2px 0 0; color: var(--ink-2); font-size: 13.5px; }
+
+.ws-chips { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+.ws-chip { font-size: 11.5px; color: var(--ink-2); background: #fff; border: 1px solid var(--line); border-radius: 99px; padding: 5px 12px; }
+.ws-chip b { color: var(--ink); font-weight: 700; }
+.ws-kpi { display: flex; align-items: baseline; gap: 10px; }
+.ws-kpi-num { font-size: 30px; font-weight: 700; color: var(--ink); letter-spacing: -.02em; line-height: 1; }
+.ws-kpi-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); }
+.ws-setup-link { font-size: 11.5px; color: #0f6cbd; font-weight: 600; cursor: pointer; text-decoration: none; margin-left: auto; }
+.ws-setup-link:hover { text-decoration: underline; }
+
+.ws-modes { display: flex; gap: 22px; margin: 18px 0 0; border-bottom: 1px solid var(--line); }
+.mode-tab { background: none; border: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ink-3); padding: 0 2px 12px; margin-bottom: -1px; border-bottom: 2px solid transparent; cursor: pointer; }
+.mode-tab:hover { color: var(--ink-2); }
+.mode-tab.active { color: #0f6cbd; border-bottom-color: #0f6cbd; }
+
+.ws-body { padding-top: 18px; padding-bottom: 56px; }
+.mode-view { display: flex; flex-direction: column; gap: 18px; }
+.mode-view[hidden] { display: none; } /* shell */
+
+/* ---------------- Header ---------------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 2px 22px;
+  flex-wrap: wrap;
+}
+.brand { display: flex; align-items: center; gap: 13px; }
+.brand-mark {
+  width: 40px; height: 40px;
+  border-radius: 11px;
+  background: var(--ink);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 20px;
+  letter-spacing: -.02em;
+}
+.brand-text h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -.02em; }
+.brand-text p { margin: 1px 0 0; color: var(--ink-2); font-size: 13px; }
+
+.topbar-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.step-pill {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  padding: 7px 14px;
+  box-shadow: var(--shadow);
+}
+.upload-btn {
+  position: relative;
+  display: inline-flex; align-items: center;
+  background: var(--ink);
+  color: #fff;
+  font-size: 13px; font-weight: 600;
+  padding: 9px 16px;
+  border-radius: 9px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+.upload-btn:hover { background: #101828; }
+.upload-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+/* ---------------- Panels ---------------- */
+.content { display: flex; flex-direction: column; gap: 18px; }
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  box-shadow: var(--shadow-card);
+}
+.panel-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 16px; margin-bottom: 18px; flex-wrap: wrap;
+}
+.panel-head h2 { margin: 0; font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
+.panel-sub { margin: 2px 0 0; color: var(--ink-2); font-size: 13px; }
+.muted { color: var(--ink-3); font-size: 12.5px; }
+
+.readiness-pill {
+  font-size: 12.5px; font-weight: 700;
+  padding: 6px 13px; border-radius: 99px;
+  border: 1px solid transparent;
+}
+.readiness-pill.good { color: var(--good); background: var(--good-bg); }
+.readiness-pill.warn { color: var(--warn); background: var(--warn-bg); }
+.readiness-pill.bad  { color: var(--bad);  background: var(--bad-bg); }
+
+/* ---------------- Data Hub ---------------- */
+.hub-grid {
+  display: grid;
+  grid-template-columns: 232px 1fr;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+.score-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card-soft);
+  padding: 20px 18px;
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+}
+.ring {
+  width: 132px; height: 132px;
+  border-radius: 50%;
+  background: conic-gradient(var(--neutral) 0deg, var(--line) 0deg);
+  display: flex; align-items: center; justify-content: center;
+}
+.ring-inner {
+  width: 104px; height: 104px;
+  background: var(--card-soft);
+  border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.ring-num { font-size: 34px; font-weight: 800; letter-spacing: -.02em; line-height: 1; }
+.ring-cap { font-size: 11px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .05em; margin-top: 3px; }
+
+.score-foot { width: 100%; }
+.score-line { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--ink-2); padding: 3px 0; }
+.score-line strong { color: var(--ink); font-variant-numeric: tabular-nums; }
+.score-note { font-size: 11px; color: var(--ink-3); margin-top: 6px; text-align: center; border-top: 1px solid var(--line-soft); padding-top: 8px; }
+
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.kpi {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  padding: 14px 16px;
+}
+.kpi-label { font-size: 11.5px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .04em; }
+.kpi-value { font-size: 22px; font-weight: 700; margin-top: 5px; letter-spacing: -.01em; word-break: break-word; }
+.kpi-value.sm { font-size: 15px; font-weight: 600; }
+
+/* Validation table */
+.vtable-wrap { border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; }
+.vtable-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  padding: 13px 16px; background: var(--card-soft); border-bottom: 1px solid var(--line);
+}
+.vtable-head h3 { margin: 0; font-size: 13px; font-weight: 700; }
+.vtable { width: 100%; border-collapse: collapse; }
+.vtable th, .vtable td { padding: 10px 16px; text-align: left; font-size: 13px; border-bottom: 1px solid var(--line-soft); }
+.vtable th { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-3); font-weight: 600; }
+.vtable tbody tr:last-child td { border-bottom: none; }
+.vtable td.field-name { font-family: "SF Mono", "Consolas", ui-monospace, monospace; font-size: 12.5px; color: var(--ink); }
+.ta-r { text-align: right; }
+
+.pop-cell { display: flex; align-items: center; gap: 10px; min-width: 150px; }
+.pop-bar { flex: 1; height: 6px; background: var(--line-soft); border-radius: 99px; overflow: hidden; max-width: 120px; }
+.pop-bar > span { display: block; height: 100%; border-radius: 99px; }
+.pop-val { width: 42px; font-variant-numeric: tabular-nums; color: var(--ink-2); font-size: 12.5px; }
+
+.tag {
+  display: inline-block; padding: 3px 10px; border-radius: 99px;
+  font-size: 11px; font-weight: 700; letter-spacing: .02em;
+}
+.tag.good { color: var(--good); background: var(--good-bg); }
+.tag.warn { color: var(--warn); background: var(--warn-bg); }
+.tag.bad  { color: var(--bad);  background: var(--bad-bg); }
+.tag.neutral { color: var(--neutral); background: var(--neutral-bg); }
+
+.fill-good { background: var(--good); }
+.fill-warn { background: var(--warn); }
+.fill-bad  { background: var(--bad); }
+.fill-neutral { background: var(--ink-3); }
+
+/* ---------------- Bowtie Canvas ---------------- */
+.bowtie-panel { padding-bottom: 26px; }
+.bowtie-legend { display: flex; gap: 16px; font-size: 12px; color: var(--ink-2); }
+.bowtie-legend .dot, .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+.dot.good { background: var(--good); }
+.dot.ring-ok { background: #a9b7c6; }
+.legend-cap { color: var(--ink-3); font-weight: 600; }
+.dot.warn { background: var(--warn); }
+.dot.bad  { background: var(--bad); }
+
+.bowtie-axis {
+  display: flex; justify-content: space-between;
+  padding: 0 6px 10px;
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3);
+}
+.bowtie-axis .center { color: var(--ink-2); font-weight: 700; }
+
+/* Large canvas that holds the SVG bowtie band + the fixed stage nodes */
+.bowtie-canvas-wrap { overflow-x: auto; padding: 4px 0 2px; }
+.bowtie-canvas {
+  position: relative;
+  min-width: 1140px;
+  height: 460px;
+}
+.bowtie-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+.bowtie-nodes { position: absolute; inset: 0; z-index: 1; }
+
+/* Fixed-size stage nodes, centered on the band's spine and evenly spaced (left set by JS) */
+.stage {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 158px;
+  height: 224px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 13px 13px 12px;
+  box-shadow: var(--shadow-card);
+  display: flex; flex-direction: column;
+  gap: 6px;
+  transition: box-shadow .15s ease, transform .15s ease;
+}
+.stage:hover { box-shadow: 0 8px 22px rgba(16,24,40,.12); transform: translate(-50%, calc(-50% - 2px)); }
+.stage.waist {
+  width: 132px;
+  border-color: #cdd3da;
+  box-shadow: 0 4px 10px rgba(16,24,40,.08), 0 16px 32px rgba(16,24,40,.09);
+}
+.stage.empty { background: var(--card-soft); }
+.stage.empty .stage-count { color: var(--ink-3); }
+
+.stage-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.stage-name { font-size: 12.5px; font-weight: 700; letter-spacing: -.01em; }
+.stage-count-wrap { margin-top: 1px; }
+.stage-count { font-size: 24px; font-weight: 800; letter-spacing: -.02em; line-height: 1; }
+.stage-count-cap { font-size: 10.5px; color: var(--ink-3); margin-top: 2px; }
+
+/* Veeva-style attainment ring (conversion vs goal) */
+.stage-ring-wrap { display: flex; justify-content: center; margin-top: 3px; }
+.stage-ring { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.stage-ring-in { width: 42px; height: 42px; border-radius: 50%; background: var(--card); display: flex; align-items: center; justify-content: center; }
+.stage.empty .stage-ring-in { background: var(--card-soft); }
+.stage-ring-num { font-size: 14px; font-weight: 800; color: var(--ink); letter-spacing: -.02em; }
+.stage-goal { text-align: center; font-size: 11px; color: var(--ink-3); margin-top: 7px; }
+.stage-goal b { color: #0f6cbd; font-weight: 700; }
+.stage-goal span { color: var(--ink-3); }
+
+.stage-metrics { display: flex; flex-direction: column; gap: 3px; margin-top: auto; padding-top: 7px; border-top: 1px solid var(--line-soft); }
+.stage-metric { display: flex; justify-content: space-between; font-size: 11.5px; }
+.stage-metric span { color: var(--ink-3); }
+.stage-metric strong { color: var(--ink-2); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.health-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.health-dot.good { background: var(--good); }
+.health-dot.warn { background: var(--warn); }
+.health-dot.bad  { background: var(--bad); }
+.health-dot.neutral { background: var(--ink-3); }
+
+.stage-pill {
+  align-self: flex-start;
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em;
+  padding: 3px 8px; border-radius: 99px;
+}
+
+/* ---------------- In-card sprint chip (small, secondary) ---------------- */
+.stage.has-sprint { border-color: #cdd4dc; }
+
+.sprint-chip {
+  align-self: flex-start;         /* compact pill that hugs its content */
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 8px;
+  max-width: 100%;                /* never wider than the card */
+  padding: 3px 9px;
+  border: 1px solid var(--line);
+  border-radius: 99px;            /* pill, never a boxed sub-card */
+  background: var(--card-soft);
+  font-size: 9.5px; font-weight: 700; letter-spacing: .02em;
+  color: var(--ink-2);
+}
+.sprint-chip .sc-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.sprint-chip .sc-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sc-dot.good { background: var(--good); }
+.sc-dot.warn { background: var(--warn); }
+.sc-dot.neutral { background: var(--neutral); }
+
+/* ---------------- Active Impact Sprints panel (clean 3-card grid) ---------------- */
+.sprints-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.sp-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  padding: 15px 16px;
+  display: flex; flex-direction: column; gap: 9px;
+}
+.sp-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.sp-name { font-size: 13.5px; font-weight: 700; color: var(--ink); line-height: 1.25; }
+.sp-stage { font-size: 11.5px; color: var(--ink-2); }
+.sp-stage b { color: var(--ink); font-weight: 600; }
+.sp-metric { font-size: 12px; color: var(--ink-2); }
+
+.sp-prog { display: flex; align-items: flex-end; gap: 10px; }
+.sp-prog .bct { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
+.sp-prog .bct b { font-size: 15px; font-weight: 700; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.sp-prog .bct.cur b { color: var(--ink); }
+.sp-prog .bct i { font-size: 9px; font-style: normal; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-3); margin-top: 2px; }
+.sp-prog .arw { font-size: 13px; color: var(--ink-3); padding-bottom: 9px; }
+
+.sp-bar { height: 5px; background: var(--line-soft); border-radius: 99px; overflow: hidden; }
+.sp-bar > span { display: block; height: 100%; border-radius: 99px; background: var(--neutral); }
+
+.sp-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 9px; border-top: 1px solid var(--line-soft); }
+.sp-foot .ev { font-size: 11px; font-weight: 600; color: var(--ink-2); }
+.sp-foot .iv { font-size: 11px; color: var(--ink-3); }
+
+.bowtie-note {
+  margin: 14px 2px 0; font-size: 12px; color: var(--ink-2);
+  max-width: 760px; line-height: 1.5;
+}
+
+@media (max-width: 820px) {
+  .sprints-grid { grid-template-columns: 1fr; }
+}
+
+/* ---------------- Technology Impact Ledger ---------------- */
+.seg {
+  display: inline-flex; flex-wrap: wrap; gap: 2px;
+  padding: 3px;
+  background: var(--card-soft);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+.seg-btn {
+  border: none; background: transparent;
+  padding: 6px 13px;
+  border-radius: 7px;
+  font-size: 12.5px; font-weight: 600;
+  color: var(--ink-2);
+  cursor: pointer;
+  font-family: inherit;
+}
+.seg-btn:hover { color: var(--ink); }
+.seg-btn.active { background: var(--card); color: var(--ink); box-shadow: var(--shadow); }
+
+.ledger-wrap { border: 1px solid var(--line); border-radius: var(--radius-sm); overflow-x: auto; }
+.ledger { width: 100%; border-collapse: collapse; min-width: 880px; }
+.ledger th, .ledger td { padding: 12px 16px; text-align: left; font-size: 13px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+.ledger th { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-3); font-weight: 600; background: var(--card-soft); }
+.ledger tbody tr:last-child td { border-bottom: none; }
+
+.lg-name { font-size: 13px; font-weight: 700; color: var(--ink); }
+.type-pill {
+  display: inline-block; margin-top: 5px;
+  padding: 2px 9px; border-radius: 99px;
+  font-size: 10.5px; font-weight: 600;
+  color: var(--ink-2); background: var(--neutral-bg); border: 1px solid var(--line);
+}
+.lg-sprint { color: var(--ink-2); font-size: 12.5px; max-width: 160px; }
+.lg-mech { color: var(--ink-2); max-width: 250px; line-height: 1.4; }
+.lg-trust, .lg-ev { color: var(--ink-2); white-space: nowrap; }
+
+.lg-adopt { display: flex; align-items: center; gap: 9px; min-width: 120px; }
+.lg-adopt .lg-bar { flex: 1; height: 6px; background: var(--line-soft); border-radius: 99px; overflow: hidden; max-width: 70px; }
+.lg-adopt .lg-bar > span { display: block; height: 100%; border-radius: 99px; background: var(--neutral); }
+.lg-adopt b { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink); font-size: 12.5px; }
+
+.lg-empty { text-align: center; color: var(--ink-3); padding: 20px; font-size: 13px; }
+
+/* ---------------- Lifecycle Mapping Setup ---------------- */
+.lcmap-wrap { border: 1px solid var(--line); border-radius: var(--radius-sm); overflow-x: auto; }
+.lcmap { width: 100%; border-collapse: collapse; min-width: 1020px; }
+.lcmap th, .lcmap td { padding: 9px 14px; text-align: left; font-size: 12px; border-bottom: 1px solid var(--line-soft); white-space: nowrap; }
+.lcmap th { font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-3); font-weight: 600; background: var(--card-soft); }
+.lcmap tbody tr:last-child td { border-bottom: none; }
+.lcmap .mono { font-family: "SF Mono", "Consolas", ui-monospace, monospace; font-size: 11.5px; color: var(--ink-2); }
+.lc-stage { display: inline-block; padding: 2px 9px; border-radius: 99px; font-size: 11px; font-weight: 600; color: var(--ink); background: var(--neutral-bg); border: 1px solid var(--line); }
+
+/* ---------------- Data Radar ---------------- */
+.radar-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(238px, 1fr)); gap: 14px; }
+.radar-card {
+  border: 1px solid var(--line);
+  border-left-width: 3px;
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  padding: 13px 15px;
+  display: flex; flex-direction: column; gap: 7px;
+  min-height: 152px;
+}
+.radar-card.sev-high { border-left-color: var(--bad); }
+.radar-card.sev-medium { border-left-color: var(--warn); }
+.radar-card.sev-low { border-left-color: var(--good); }
+.radar-card.sev-na { border-left-color: var(--ink-3); }
+.rc-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.rc-name { font-size: 12.5px; font-weight: 700; color: var(--ink); }
+.rc-count { font-size: 26px; font-weight: 800; color: var(--ink); line-height: 1; letter-spacing: -.02em; }
+.rc-count.na { font-size: 12.5px; font-weight: 600; color: var(--ink-3); }
+.rc-exp { font-size: 11.5px; color: var(--ink-2); line-height: 1.4; }
+.rc-action { font-size: 11.5px; color: var(--ink-2); border-top: 1px solid var(--line-soft); padding-top: 8px; margin-top: auto; line-height: 1.4; }
+.rc-act-label { display: inline-block; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); margin-right: 5px; }
+
+/* ---------------- Evidence Timeline ---------------- */
+.ev-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.evs-item {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card-soft);
+  padding: 14px 16px;
+}
+.evs-label { font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-3); }
+.evs-value { font-size: 14px; font-weight: 700; color: var(--ink); margin-top: 5px; line-height: 1.3; }
+
+.timeline { position: relative; padding-left: 26px; }
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 6px; top: 6px; bottom: 6px;
+  width: 2px;
+  background: var(--line);
+}
+.tl-item { position: relative; padding-bottom: 18px; }
+.tl-item:last-child { padding-bottom: 0; }
+.tl-dot {
+  position: absolute;
+  left: -26px; top: 2px;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 2px solid var(--ink-3);
+  box-sizing: border-box;
+}
+.tl-item.current .tl-dot { background: var(--ink); border-color: var(--ink); }
+
+.tl-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.tl-level { font-size: 13px; font-weight: 700; color: var(--ink); }
+.tl-week { font-size: 11.5px; color: var(--ink-3); }
+.tl-conf { font-size: 10px; }
+.tl-cur {
+  font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--ink-2); background: var(--neutral-bg); border: 1px solid var(--line);
+  padding: 2px 7px; border-radius: 99px;
+}
+.tl-obs { font-size: 12.5px; color: var(--ink-2); margin-top: 4px; line-height: 1.45; max-width: 700px; }
+
+@media (max-width: 820px) {
+  .ev-summary { grid-template-columns: 1fr; }
+}
+
+/* ===================== Stage drill-down fly-out ===================== */
+.stage { cursor: pointer; }
+
+.flyout-scrim { position: fixed; inset: 48px 0 0 224px; background: rgba(16,24,40,.28); z-index: 50; opacity: 0; visibility: hidden; transition: opacity .2s ease; }
+.flyout-scrim.open { opacity: 1; visibility: visible; }
+
+.flyout {
+  position: fixed; top: 48px; right: 0; height: calc(100vh - 48px); width: 720px;
+  max-width: calc(94vw - 224px);
+  background: #fff; z-index: 51; transform: translateX(100%); transition: transform .26s ease;
+  border-left: 1px solid var(--line); box-shadow: -8px 0 24px rgba(16,24,40,.14);
+  display: flex; flex-direction: column;
+}
+.flyout.open { transform: translateX(0); }
+
+.flyout-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 12px; }
+.fly-title { display: flex; align-items: center; gap: 9px; font-size: 17px; font-weight: 700; color: var(--ink); }
+.fly-ico { width: 18px; height: 18px; border-radius: 50%; background: linear-gradient(135deg,#0f6cbd,#2a9bd8); flex-shrink: 0; }
+.fly-close { background: none; border: none; font-size: 22px; line-height: 1; color: var(--ink-3); cursor: pointer; padding: 2px 6px; border-radius: 6px; }
+.fly-close:hover { background: #f0f2f5; color: var(--ink); }
+
+.flyout-context { display: flex; align-items: center; gap: 8px; padding: 0 20px 14px; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
+.fctx { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink-2); background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 5px 11px; }
+.fctx-dot { width: 9px; height: 9px; border-radius: 50%; background: #0f6cbd; }
+.fctx-stage { font-weight: 600; color: var(--ink); }
+
+.flyout-body { flex: 1; overflow-y: auto; padding: 18px 20px 40px; }
+
+.rca-head { font-size: 16px; font-weight: 700; color: var(--ink); margin-bottom: 14px; }
+.rca-head .caret { color: var(--ink-3); font-size: 13px; }
+.rca-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 28px; }
+.rca-metric { border-bottom: 1px solid var(--line-soft); padding-bottom: 14px; }
+.rca-m-top { display: flex; align-items: center; gap: 7px; }
+.m-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.m-dot.good { background: var(--good); }
+.m-dot.warn { background: var(--warn); }
+.m-dot.bad { background: var(--bad); }
+.m-dot.neutral { background: var(--ink-3); }
+.m-dot.diamond { border-radius: 1px; transform: rotate(45deg); }
+.m-name { font-size: 13px; font-weight: 600; color: var(--ink); }
+.rca-arr { margin-left: auto; font-size: 12px; font-weight: 700; }
+.rca-arr.pos { color: var(--good); }
+.rca-arr.neg { color: var(--bad); }
+.rca-arr.zero { color: var(--ink-3); }
+.rca-arr.pill { background: var(--bad-bg); padding: 2px 8px; border-radius: 6px; }
+
+.rca-row { display: flex; align-items: baseline; justify-content: space-between; font-size: 12px; margin-top: 10px; }
+.rca-lab { color: var(--ink-2); }
+.rca-lab.good { color: var(--good); font-weight: 600; }
+.rca-lab.warn { color: var(--warn); font-weight: 600; }
+.rca-lab.bad { color: var(--bad); font-weight: 600; }
+.rca-val { font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+.rca-val.bad-u { color: var(--bad); border-bottom: 2px solid var(--bad); }
+.rca-nodata { font-size: 11px; color: var(--ink-3); background: #f0f2f5; padding: 1px 7px; border-radius: 4px; }
+.rca-bar { height: 3px; background: var(--line-soft); border-radius: 99px; overflow: hidden; margin-top: 4px; }
+.rca-bar > span { display: block; height: 100%; border-radius: 99px; }
+.rca-bar > span.good { background: var(--good); }
+.rca-bar > span.warn { background: var(--warn); }
+.rca-bar > span.bad { background: var(--bad); }
+.rca-bar > span.plan { background: #7c8a9c; }
+
+.rca-sub { font-size: 11px; color: var(--ink-3); margin-top: 12px; }
+.rca-driver { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink); font-weight: 500; margin-top: 6px; }
+.rca-driver .meg { width: 14px; height: 11px; border-radius: 2px; border: 1.5px solid var(--ink-3); flex-shrink: 0; }
+.rca-dots { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; }
+.rca-dots i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+.rca-dots i.good { background: var(--good); }
+.rca-dots i.bad { background: var(--bad); }
+.rca-dots b { color: var(--ink-3); margin-left: 3px; }
+
+.fly-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-top: 24px; }
+.fly-card { border: 1px solid var(--line); border-radius: var(--radius-sm); background: #fff; padding: 16px; }
+.fc-title { font-size: 13.5px; font-weight: 700; color: var(--ink); }
+.fc-title-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+
+.win-wrap { display: flex; flex-direction: column; align-items: center; text-align: center; margin-top: 12px; }
+.win-ring { width: 84px; height: 84px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.win-ring-in { width: 64px; height: 64px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; }
+.win-num { font-size: 26px; font-weight: 800; color: var(--ink); }
+.win-note { font-size: 12px; color: var(--ink-2); margin-top: 12px; }
+.win-sub { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+.win-toggle { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin-top: 14px; }
+.win-tab { background: #fff; border: none; font-family: inherit; font-size: 12px; font-weight: 600; color: var(--ink-2); padding: 7px 13px; cursor: pointer; }
+.win-tab.active { background: #eef2f8; color: var(--ink); }
+
+.spiced-pct { font-size: 15px; font-weight: 800; color: #0f6cbd; }
+.spiced-bar { height: 7px; background: #e6e8ec; border-radius: 99px; overflow: hidden; margin: 14px 0 14px; }
+.spiced-bar > span { display: block; height: 100%; background: #0f6cbd; border-radius: 99px; }
+.spiced-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.spiced-chip { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--bad); background: var(--bad-bg); border: 1px solid #f6d6d3; border-radius: 7px; padding: 9px 11px; }
+.spiced-chip.ok { color: var(--good); background: var(--good-bg); border-color: #c7e6d4; }
+.ok-i { width: 13px; height: 13px; flex-shrink: 0; fill: none; stroke: var(--good); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.warn-i { width: 0; height: 0; flex-shrink: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 11px solid var(--bad); }
+
+.kd-explore { display: inline-flex; align-items: center; gap: 6px; background: #fff; border: 1px solid var(--line); border-radius: 7px; font-size: 12px; font-weight: 600; color: var(--ink-2); padding: 6px 11px; cursor: pointer; }
+.kd-group { display: flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700; margin: 14px 0 8px; }
+.kd-group.good { color: var(--good); }
+.kd-group.bad { color: var(--bad); }
+.kd-check { width: 13px; height: 13px; border-radius: 50%; border: 2px solid var(--good); flex-shrink: 0; }
+.kd-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
+.kd-item.kd-pos { background: var(--good-bg); }
+.kd-item.kd-neg { background: var(--bad-bg); }
+.kd-text { font-size: 12.5px; font-weight: 600; color: var(--ink); }
+.kd-date { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+.kd-action { font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.kd-action.pos { color: var(--good); }
+.kd-action.neg { color: var(--bad); }
+
+/* ===================== Recommended Pipeline Intervention drawer ===================== */
+.intv-scrim { position: fixed; inset: 48px 0 0 224px; background: rgba(16,24,40,.24); z-index: 52; opacity: 0; visibility: hidden; transition: opacity .2s ease; }
+.intv-scrim.open { opacity: 1; visibility: visible; }
+.intv-drawer { position: fixed; top: 48px; right: 0; height: calc(100vh - 48px); width: 440px; max-width: calc(92vw - 224px); background: #fff; z-index: 53; transform: translateX(100%); transition: transform .26s ease; border-left: 1px solid var(--line); box-shadow: -8px 0 24px rgba(16,24,40,.16); display: flex; flex-direction: column; }
+.intv-drawer.open { transform: translateX(0); }
+.intv-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px 14px; border-bottom: 1px solid var(--line); }
+.intv-title { font-size: 16px; font-weight: 700; color: var(--ink); }
+.intv-body { flex: 1; overflow-y: auto; padding: 18px 20px; }
+.intv-body section { margin-bottom: 20px; }
+.intv-body h4 { margin: 0 0 7px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); }
+.intv-body p { margin: 0 0 9px; font-size: 13px; line-height: 1.5; color: var(--ink-2); }
+.intv-body b { color: var(--ink); }
+.intv-action-title { font-size: 14px !important; font-weight: 700; color: var(--ink) !important; }
+.intv-body ul { margin: 6px 0 0; padding-left: 18px; }
+.intv-body li { font-size: 13px; line-height: 1.6; color: var(--ink-2); }
+.intv-preview { margin-top: 4px; background: var(--card-soft); border: 1px solid var(--line); border-radius: 8px; padding: 12px; font-size: 12.5px; line-height: 1.5; color: var(--ink-2); }
+.intv-foot { display: flex; gap: 10px; padding: 14px 20px; border-top: 1px solid var(--line); }
+.intv-btn { flex: 1; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; border: 1px solid var(--line); }
+.intv-btn.ghost { background: #fff; color: var(--ink-2); }
+.intv-btn.ghost:hover { background: #f5f7fa; }
+.intv-btn.primary { background: #0f6cbd; color: #fff; border-color: #0f6cbd; }
+.intv-btn.primary:hover { background: #0c5aa0; }
+.intv-success { margin: 14px 20px 20px; padding: 14px 16px; background: var(--good-bg); border: 1px solid #c7e6d4; border-radius: 8px; font-size: 13px; line-height: 1.5; color: #0f5132; }
+
+/* Sprint "Impact Discovery Active" badge */
+.sp-badge-row { margin-top: 2px; }
+.sp-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; font-weight: 700; color: var(--good); background: var(--good-bg); border: 1px solid #c7e6d4; border-radius: 99px; padding: 3px 10px; }
+.sp-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--good); display: inline-block; }
+
+/* ---------------- Placeholder ---------------- */
+.placeholder {
+  background: var(--card-soft);
+  border: 1px dashed var(--line);
+  box-shadow: none;
+}
+.placeholder h3 { margin: 0 0 6px; font-size: 14px; font-weight: 700; }
+.placeholder p { margin: 0; color: var(--ink-2); font-size: 13px; max-width: 720px; }
+
+@media (max-width: 820px) {
+  .hub-grid { grid-template-columns: 1fr; }
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+}
+  </style>
+</head>
+<body>
+  <div class="shell">
+
+    <!-- ===== Dynamics 365 application bar ===== -->
+    <header class="appbar">
+      <div class="appbar-left">
+        <button class="d365-waffle" type="button" aria-label="App launcher">
+          <span class="waffle"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        </button>
+        <span class="appbar-brand">Dynamics 365</span>
+        <span class="appbar-divider"></span>
+        <span class="appbar-area">Sales Hub</span>
+      </div>
+      <div class="appbar-search">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><line x1="10.5" y1="10.5" x2="14.5" y2="14.5"/></svg>
+        <span>Search</span>
+      </div>
+      <div class="appbar-right">
+        <button class="appbar-ico" type="button" title="Quick create"><svg viewBox="0 0 16 16"><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/></svg></button>
+        <button class="appbar-ico" type="button" title="Settings"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.3"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M12.6 3.4l-1.4 1.4M4.8 11.2l-1.4 1.4"/></svg></button>
+        <button class="appbar-ico" type="button" title="Help"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5"/><path d="M6.3 6.2a1.8 1.8 0 1 1 2.5 1.7c-.6.3-.9.7-.9 1.3"/><circle cx="8" cy="11.3" r=".55" fill="currentColor" stroke="none"/></svg></button>
+        <span class="appbar-avatar">AN</span>
+      </div>
+    </header>
+
+    <div class="shell-body">
+
+      <!-- ===== Sales Hub sitemap ===== -->
+      <nav class="rail" aria-label="Sales Hub navigation">
+        <button class="rail-collapse" type="button" aria-label="Collapse site map"><svg viewBox="0 0 16 16"><line x1="2.5" y1="4" x2="13.5" y2="4"/><line x1="2.5" y1="8" x2="13.5" y2="8"/><line x1="2.5" y1="12" x2="13.5" y2="12"/></svg></button>
+
+        <a class="rail-item"><svg viewBox="0 0 16 16"><path d="M2.5 7.5 8 3l5.5 4.5"/><path d="M4 7v6h8V7"/></svg>Home</a>
+        <a class="rail-item"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 4.5V8l2.5 1.5"/></svg>Recent <span class="chev">&rsaquo;</span></a>
+        <a class="rail-item"><svg viewBox="0 0 16 16"><path d="M10 2l4 4-3 1-3 3-1-1-3.5 3.5L7 9 6 8z"/></svg>Pinned <span class="chev">&rsaquo;</span></a>
+
+        <div class="rail-group">My Work</div>
+        <a class="rail-item"><svg viewBox="0 0 16 16"><path d="M8 2.2l1.3 3.5 3.5 1.3-3.5 1.3L8 11.8 6.7 8.3 3.2 7l3.5-1.3z"/></svg>Copilot</a>
+        <a class="rail-item"><svg viewBox="0 0 16 16"><path d="M9 2 4 9h3l-1 5 5-7H8z"/></svg>Sales accelerator</a>
+        <a class="rail-item"><svg viewBox="0 0 16 16"><rect x="2.5" y="2.5" width="11" height="11" rx="2"/><path d="M5.5 8.5 7 10l3.5-3.5"/></svg>Activities</a>
+        <a class="rail-item"><svg viewBox="0 0 16 16"><rect x="2.5" y="2.5" width="4.5" height="4.5" rx="1"/><rect x="9" y="2.5" width="4.5" height="4.5" rx="1"/><rect x="2.5" y="9" width="4.5" height="4.5" rx="1"/><rect x="9" y="9" width="4.5" height="4.5" rx="1"/></svg>Dashboards</a>
+        <a class="rail-item active" id="navBarchetta"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="2.4"/></svg>cX RevOS</a>
+
+        <div class="rail-group">Customers</div>
+        <a class="rail-item"><svg viewBox="0 0 16 16"><rect x="3" y="2.5" width="6.5" height="11" rx="1"/><path d="M9.5 6h3.5v7.5M5 5h2.5M5 7.5h2.5M5 10h2.5"/></svg>Accounts</a>
+        <a class="rail-item"><svg viewBox="0 0 16 16"><circle cx="8" cy="5.5" r="2.5"/><path d="M3.5 13c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4"/></svg>Contacts</a>
+
+        <div class="rail-group">Sales</div>
+        <a class="rail-item"><svg viewBox="0 0 16 16"><path d="M2.5 3.5h11L9.5 9v4l-3-1.5V9z"/></svg>Leads</a>
+        <a class="rail-item"><svg viewBox="0 0 16 16"><rect x="2.5" y="5" width="11" height="8" rx="1.5"/><path d="M6 5V3.5h4V5"/></svg>Opportunities</a>
+
+        <div class="rail-area"><span>Sales</span><svg viewBox="0 0 16 16" class="updown"><path d="M5 6.5 8 3.5l3 3M5 9.5l3 3 3-3"/></svg></div>
+      </nav>
+
+      <!-- ===== Main workspace (embedded app) ===== -->
+      <main class="workspace">
+
+        <div class="ws-cmdbar">
+          <span class="ws-appicon">cX</span>
+          <span class="ws-appname">cX RevOS</span>
+          <span class="ws-pin" title="Pin"><svg viewBox="0 0 16 16"><path d="M10 2l4 4-3 1-3 3-1-1-3.5 3.5L7 9 6 8z"/></svg></span>
+          <span class="ws-cmd-spacer"></span>
+          <button class="ws-func" type="button">Function: <b>Division Sales Leader — Well Construction</b><span class="caret">&#9662;</span></button>
+          <label class="upload-btn">
+            <input type="file" id="fileInput" accept=".csv,text/csv" />
+            <span>Upload data</span>
+          </label>
+        </div>
+
+        <div class="ws-header">
+          <div class="ws-title">
+            <h1>cX RevOS</h1>
+            <p>SLB Commercial Reservoir · Revenue Execution Workspace</p>
+          </div>
+        </div>
+
+        <div class="ws-chips">
+          <div class="ws-kpi">
+            <span class="ws-kpi-num">82%</span>
+            <span class="ws-kpi-label">Bowtie confidence</span>
+          </div>
+          <a class="ws-setup-link" id="viewSetupLink">View setup &rarr;</a>
+        </div>
+
+        <div class="ws-modes" id="wsModes">
+          <button class="mode-tab active" type="button" data-mode="operator">Operator Workspace</button>
+          <button class="mode-tab" type="button" data-mode="setup">Setup &amp; Trust</button>
+        </div>
+
+        <div class="ws-body">
+
+          <!-- ===== SETUP & TRUST MODE ===== -->
+          <div id="modeSetup" class="mode-view" hidden>
+
+      <!-- ============== DATA HUB PANEL ============== -->
+      <section class="panel" id="dataHub">
+        <div class="panel-head">
+          <div>
+            <h2>Data Hub</h2>
+            <p class="panel-sub">Integrity of your Dynamics 365 pursuit layer</p>
+          </div>
+          <span class="readiness-pill" id="readinessPill">&mdash;</span>
+        </div>
+
+        <div class="hub-grid">
+          <!-- Score -->
+          <div class="score-card">
+            <div class="ring" id="scoreRing">
+              <div class="ring-inner">
+                <div class="ring-num" id="scoreNum">0</div>
+                <div class="ring-cap">Readiness</div>
+              </div>
+            </div>
+            <div class="score-foot">
+              <div class="score-line"><span>Fields present</span><strong id="presentLine">&mdash;</strong></div>
+              <div class="score-line"><span>Avg populated</span><strong id="avgLine">&mdash;</strong></div>
+              <div class="score-note">50% present + 50% populated</div>
+            </div>
+          </div>
+
+          <!-- KPI tiles -->
+          <div class="kpi-row">
+            <div class="kpi"><div class="kpi-label">File loaded</div><div class="kpi-value" id="kFile">&mdash;</div></div>
+            <div class="kpi"><div class="kpi-label">Rows</div><div class="kpi-value" id="kRows">&mdash;</div></div>
+            <div class="kpi"><div class="kpi-label">Columns</div><div class="kpi-value" id="kCols">&mdash;</div></div>
+            <div class="kpi"><div class="kpi-label">Missing required</div><div class="kpi-value" id="kMissing">&mdash;</div></div>
+            <div class="kpi"><div class="kpi-label">Warnings</div><div class="kpi-value" id="kWarn">&mdash;</div></div>
+            <div class="kpi"><div class="kpi-label">Metric readiness</div><div class="kpi-value sm" id="kStatus">&mdash;</div></div>
+          </div>
+        </div>
+
+        <!-- Validation table -->
+        <div class="vtable-wrap">
+          <div class="vtable-head">
+            <h3>Required field validation</h3>
+            <span class="muted" id="vtableMeta"></span>
+          </div>
+          <table class="vtable">
+            <thead>
+              <tr><th>Field</th><th>Present</th><th>Populated</th><th class="ta-r">Status</th></tr>
+            </thead>
+            <tbody id="validationBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============== LIFECYCLE MAPPING SETUP ============== -->
+      <section class="panel" id="lifecycle">
+        <div class="panel-head">
+          <div>
+            <h2>Lifecycle Mapping Setup</h2>
+            <p class="panel-sub">Defines how CRM records become Bowtie lifecycle events.</p>
+          </div>
+        </div>
+        <div class="lcmap-wrap">
+          <table class="lcmap">
+            <thead>
+              <tr>
+                <th>CRM object</th>
+                <th>CRM field</th>
+                <th>CRM condition</th>
+                <th>Bowtie stage</th>
+                <th>Date anchor</th>
+                <th>Value field</th>
+                <th>Owner field</th>
+                <th>Lost condition</th>
+                <th>Stalled threshold</th>
+              </tr>
+            </thead>
+            <tbody id="lcmapBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============== DATA RADAR ============== -->
+      <section class="panel" id="radar">
+        <div class="panel-head">
+          <div>
+            <h2>Data Radar</h2>
+            <p class="panel-sub">Data-trust view of the loaded CRM data &mdash; surfaces mapping gaps and stage readiness that shape Bowtie confidence and Impact Sprint evidence.</p>
+          </div>
+        </div>
+        <div class="radar-grid" id="radarGrid"><!-- radar cards injected by app.js --></div>
+      </section>
+
+          </div><!-- /#modeSetup -->
+
+          <!-- ===== OPERATOR WORKSPACE MODE ===== -->
+          <div id="modeOperator" class="mode-view">
+
+      <!-- ============== BOWTIE CANVAS ============== -->
+      <section class="panel bowtie-panel" id="bowtie">
+        <div class="panel-head">
+          <div>
+            <h2>Bowtie Canvas</h2>
+            <p class="panel-sub">Pursuit-to-expansion journey mapped from Dynamics 365 stages</p>
+          </div>
+          <div class="bowtie-legend">
+            <span class="legend-cap">Ring:</span>
+            <span><i class="dot ring-ok"></i>On track</span>
+            <span><i class="dot warn"></i>Watch</span>
+            <span><i class="dot bad"></i>At risk</span>
+          </div>
+        </div>
+
+        <div class="bowtie-axis">
+          <span class="axis-label">Win the work</span>
+          <span class="axis-label center">Award</span>
+          <span class="axis-label">Deliver &amp; grow</span>
+        </div>
+
+        <div class="bowtie-canvas-wrap">
+          <div class="bowtie-canvas">
+            <svg class="bowtie-bg" viewBox="0 0 1000 460" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="btb1" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#f4f6f9" />
+                  <stop offset="1" stop-color="#eef1f5" />
+                </linearGradient>
+                <linearGradient id="btb2" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#e9edf2" />
+                  <stop offset="1" stop-color="#e2e7ed" />
+                </linearGradient>
+              </defs>
+              <!-- Layer 1: outer halo -->
+              <polygon points="0,25 472,201 528,201 1000,25 1000,435 528,259 472,259 0,435" fill="url(#btb1)" />
+              <!-- Layer 2: mid band -->
+              <polygon points="0,68 471,208 529,208 1000,68 1000,392 529,252 471,252 0,392" fill="url(#btb2)" />
+              <!-- Layer 3: inner band with edge definition -->
+              <polygon points="0,104 470,214 530,214 1000,104 1000,356 530,246 470,246 0,356"
+                fill="#d9dfe6" stroke="#cdd4dc" stroke-width="1.5" />
+              <!-- Spine -->
+              <line x1="0" y1="230" x2="1000" y2="230" stroke="#c4ccd5" stroke-width="1.5" stroke-dasharray="2 7" />
+              <!-- Waist guides -->
+              <line x1="470" y1="150" x2="470" y2="310" stroke="#cdd4dc" stroke-width="1" />
+              <line x1="530" y1="150" x2="530" y2="310" stroke="#cdd4dc" stroke-width="1" />
+            </svg>
+            <div class="bowtie-nodes" id="bowtie-row"><!-- stage cards injected by app.js --></div>
+          </div>
+        </div>
+
+        <p class="bowtie-note">
+          Impact Sprints sit on constrained Bowtie stages and track whether deployed
+          interventions are changing leading indicators and business outcomes.
+        </p>
+      </section>
+
+      <!-- ============== ACTIVE IMPACT SPRINTS ============== -->
+      <section class="panel" id="sprints">
+        <div class="panel-head">
+          <div>
+            <h2>Active Impact Sprints</h2>
+            <p class="panel-sub">Sprints currently running on constrained stages</p>
+          </div>
+        </div>
+        <div class="sprints-grid" id="sprintsList"></div>
+      </section>
+
+      <!-- ============== TECHNOLOGY IMPACT LEDGER ============== -->
+      <section class="panel" id="ledger">
+        <div class="panel-head">
+          <div>
+            <h2>Technology Impact Ledger</h2>
+            <p class="panel-sub">Agents, CRM changes, workflows, and data interventions deployed through Impact Sprints.</p>
+          </div>
+        </div>
+
+        <p class="bowtie-note" style="margin-top:0">
+          The ledger shows which deployed interventions are intended to move each sprint metric,
+          and whether adoption, trust, and evidence are strong enough to scale.
+        </p>
+
+        <div class="seg" id="ledgerFilter">
+          <button class="seg-btn active" type="button" data-type="All">All</button>
+          <button class="seg-btn" type="button" data-type="Agent">Agent</button>
+          <button class="seg-btn" type="button" data-type="CRM Configuration">CRM Configuration</button>
+          <button class="seg-btn" type="button" data-type="Analytics">Analytics</button>
+          <button class="seg-btn" type="button" data-type="Data Integration">Data Integration</button>
+        </div>
+
+        <div class="ledger-wrap">
+          <table class="ledger">
+            <thead>
+              <tr>
+                <th>Intervention</th>
+                <th>Sprint</th>
+                <th>Expected mechanism</th>
+                <th>Adoption</th>
+                <th>Trust</th>
+                <th>Evidence</th>
+                <th class="ta-r">Status</th>
+              </tr>
+            </thead>
+            <tbody id="ledgerBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============== EVIDENCE TIMELINE ============== -->
+      <section class="panel" id="evidence">
+        <div class="panel-head">
+          <div>
+            <h2>Evidence Timeline</h2>
+            <p class="panel-sub">Proof sequence showing whether deployed interventions are moving from usage to trust to behavior change to outcome movement.</p>
+          </div>
+        </div>
+
+        <div class="ev-summary">
+          <div class="evs-item">
+            <div class="evs-label">Current evidence level</div>
+            <div class="evs-value" id="evCurrentLevel">&mdash;</div>
+          </div>
+          <div class="evs-item">
+            <div class="evs-label">Outcome status</div>
+            <div class="evs-value" id="evOutcomeStatus">&mdash;</div>
+          </div>
+          <div class="evs-item">
+            <div class="evs-label">Recommended decision</div>
+            <div class="evs-value" id="evDecision">&mdash;</div>
+          </div>
+        </div>
+
+        <div class="timeline" id="evidenceTimeline"><!-- evidence events injected by app.js --></div>
+      </section>
+
+          </div><!-- /#modeOperator -->
+
+        </div><!-- /.ws-body -->
+      </main><!-- /.workspace -->
+    </div><!-- /.shell-body -->
+  </div><!-- /.shell -->
+
+  <!-- ===== Stage drill-down fly-out ===== -->
+  <div class="flyout-scrim" id="flyoutScrim"></div>
+  <aside class="flyout" id="stageFlyout" aria-label="Stage performance">
+    <div class="flyout-head">
+      <div class="fly-title"><span class="fly-ico" aria-hidden="true"></span>Performance</div>
+      <button class="fly-close" id="flyoutClose" type="button" aria-label="Close">&times;</button>
+    </div>
+    <div class="flyout-context">
+      <span class="fctx"><span class="fctx-dot"></span>Well Construction — NAM Land</span>
+      <span class="fctx">Mar 2025</span>
+      <span class="fctx fctx-stage" id="flyStageCtx">Propose (Pursuit &rarr; Tender submitted)</span>
+    </div>
+
+    <div class="flyout-body">
+
+      <!-- TOP HALF: Root Cause Analysis -->
+      <div class="rca-head">Root Cause Analysis <span class="caret">&#9662;</span></div>
+      <div class="rca-grid">
+
+        <div class="rca-metric">
+          <div class="rca-m-top"><span class="m-dot good"></span><span class="m-name"># Tenders Submitted (Input)</span><span class="rca-arr pos">+ $16.8M CV</span></div>
+          <div class="rca-row"><span class="rca-lab good">Actuals</span><span class="rca-val">14</span></div>
+          <div class="rca-bar"><span class="good" style="width:100%"></span></div>
+          <div class="rca-row"><span class="rca-lab">Plan</span><span class="rca-val">12</span></div>
+          <div class="rca-bar"><span class="plan" style="width:86%"></span></div>
+          <div class="rca-sub">Typically driven by these sub-drivers:</div>
+          <div class="rca-driver"><span class="meg" aria-hidden="true"></span>GeoUnit Breakdown<span class="rca-dots"><i class="good"></i><i class="good"></i><i class="bad"></i><b>&rsaquo;</b></span></div>
+        </div>
+
+        <div class="rca-metric">
+          <div class="rca-m-top"><span class="m-dot warn"></span><span class="m-name">% Tender &rarr; Award</span><span class="rca-arr neg">- $42M CV</span></div>
+          <div class="rca-row"><span class="rca-lab warn">Actuals</span><span class="rca-val">31%</span></div>
+          <div class="rca-bar"><span class="warn" style="width:86%"></span></div>
+          <div class="rca-row"><span class="rca-lab">Plan</span><span class="rca-val">36%</span></div>
+          <div class="rca-bar"><span class="plan" style="width:100%"></span></div>
+          <div class="rca-sub">Typically driven by these sub-drivers:</div>
+          <div class="rca-driver"><span class="meg" aria-hidden="true"></span>GeoUnit Breakdown<span class="rca-dots"><i class="bad"></i><i class="bad"></i><i class="bad"></i><i class="good"></i><b>&rsaquo;</b></span></div>
+        </div>
+
+        <div class="rca-metric">
+          <div class="rca-m-top"><span class="m-dot bad diamond"></span><span class="m-name">$ Contract Value per Award</span><span class="rca-arr neg pill">- $28.8M CV</span></div>
+          <div class="rca-row"><span class="rca-lab bad">Actuals</span><span class="rca-val bad-u">$8.4M</span></div>
+          <div class="rca-bar"><span class="bad" style="width:70%"></span></div>
+          <div class="rca-row"><span class="rca-lab">Plan</span><span class="rca-val">$12M</span></div>
+          <div class="rca-bar"><span class="plan" style="width:100%"></span></div>
+          <div class="rca-sub">Typically driven by these sub-drivers:</div>
+          <div class="rca-driver"><span class="meg" aria-hidden="true"></span>GeoUnit Breakdown<span class="rca-dots"><i class="bad"></i><i class="good"></i><b>&rsaquo;</b></span></div>
+        </div>
+
+        <div class="rca-metric">
+          <div class="rca-m-top"><span class="m-dot neutral"></span><span class="m-name">$ Service Attach post-Award</span><span class="rca-arr zero">$0 attach</span></div>
+          <div class="rca-row"><span class="rca-lab">Actuals</span><span class="rca-val">0</span></div>
+          <div class="rca-bar"><span class="plan" style="width:0%"></span></div>
+          <div class="rca-row"><span class="rca-lab">Plan</span><span class="rca-nodata">No data</span></div>
+          <div class="rca-bar"><span class="plan" style="width:0%"></span></div>
+          <div class="rca-sub">Typically driven by these sub-drivers:</div>
+          <div class="rca-driver"><span class="meg" aria-hidden="true"></span>GeoUnit Breakdown<span class="rca-dots"><b>&rsaquo;</b></span></div>
+        </div>
+
+      </div>
+
+      <!-- BOTTOM HALF: Win / SPICED / Key Drivers -->
+      <div class="fly-cards">
+
+        <div class="fly-card">
+          <div class="fc-title">Pursuit Health Agent</div>
+          <div class="win-wrap">
+            <div class="win-ring" style="background:conic-gradient(#d64545 137deg, #e8edf3 0deg)">
+              <div class="win-ring-in"><span class="win-num">38</span></div>
+            </div>
+            <div class="win-note">Med confidence, based on 3 signals</div>
+            <div class="win-sub">Last updated Jun 28</div>
+            <div class="win-toggle"><button class="win-tab active" type="button">This Quarter</button><button class="win-tab" type="button">Next Quarter</button></div>
+          </div>
+        </div>
+
+        <div class="fly-card">
+          <div class="fc-title-row"><span class="fc-title">SPICED Health</span><span class="spiced-pct">0%</span></div>
+          <div class="spiced-bar"><span style="width:2%"></span></div>
+          <div class="spiced-grid">
+            <span class="spiced-chip ok"><svg class="ok-i" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 5"/></svg>Situation</span>
+            <span class="spiced-chip ok"><svg class="ok-i" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 5"/></svg>Pain</span>
+            <span class="spiced-chip"><span class="warn-i" aria-hidden="true"></span>Impact</span>
+            <span class="spiced-chip"><span class="warn-i" aria-hidden="true"></span>Critical Event</span>
+            <span class="spiced-chip"><span class="warn-i" aria-hidden="true"></span>Decision Process</span>
+            <span class="spiced-chip"><span class="warn-i" aria-hidden="true"></span>Decision Criteria</span>
+          </div>
+        </div>
+
+        <div class="fly-card">
+          <div class="fc-title-row"><span class="fc-title">Key Drivers</span><button class="kd-explore" type="button">Explore All</button></div>
+          <div class="kd-group good"><span class="kd-check" aria-hidden="true"></span>Top Positives</div>
+          <div class="kd-item kd-pos">
+            <div><div class="kd-text">Situation &mdash; pursuit teams document well programs and technical scope thoroughly</div><div class="kd-date">Jun 24</div></div>
+            <a class="kd-action pos">View evidence</a>
+          </div>
+          <div class="kd-item kd-pos">
+            <div><div class="kd-text">Pain &mdash; operator drilling challenges (NPT, ROP) consistently captured</div><div class="kd-date">Jun 26</div></div>
+            <a class="kd-action pos">View evidence</a>
+          </div>
+          <div class="kd-group bad"><span class="warn-i" aria-hidden="true"></span>Top Negatives</div>
+          <div class="kd-item kd-neg">
+            <div><div class="kd-text">Impact &mdash; quantified operator impact (NPT avoided, uplift, $/BOE) missing before tender</div><div class="kd-date">Jun 27</div></div>
+            <a class="kd-action neg" id="createNextStep">Create next step</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== Recommended Pipeline Intervention drawer ===== -->
+  <div class="intv-scrim" id="intvScrim"></div>
+  <aside class="intv-drawer" id="intvDrawer" aria-label="Recommended pipeline intervention">
+    <div class="intv-head">
+      <div class="intv-title">Recommended Pipeline Intervention</div>
+      <button class="fly-close" id="intvClose" type="button" aria-label="Close">&times;</button>
+    </div>
+    <div class="intv-body">
+      <section>
+        <h4>What we found</h4>
+        <p>Tender &rarr; Award conversion is 31% against a 36% target, and average tender age is 74 days.</p>
+        <p>Across Propose-stage pursuit conversations, the weakest recurring behavior is <b>Impact Quantification</b>. Pursuit teams are documenting the operator&rsquo;s well program and drilling challenges, but they are not consistently quantifying:</p>
+        <ul>
+          <li>NPT avoided and uptime delivered</li>
+          <li>Production uplift and cost per barrel</li>
+          <li>The operator&rsquo;s measure of success</li>
+        </ul>
+      </section>
+      <section>
+        <h4>Recommended action</h4>
+        <p class="intv-action-title">Tune Q3 Tender Conversion Sprint</p>
+        <p>Activate the <b>Impact Quantification Playbook</b> in cX Dialogue Copilot across Propose-stage pursuit conversations for the next 30 days.</p>
+        <p>Dialogue Copilot will prompt pursuit teams to quantify operator impact during the conversation and capture the confirmed information in Dynamics 365.</p>
+      </section>
+      <section>
+        <h4>How we will measure it</h4>
+        <ul>
+          <li>Impact quantification coverage</li>
+          <li>Average tender age</li>
+          <li>Tender &rarr; Award conversion</li>
+        </ul>
+      </section>
+      <div class="intv-preview" id="intvPreview" hidden>
+        Preview &mdash; in each Propose-stage pursuit conversation, Dialogue Copilot prompts the team to quantify NPT avoided, production uplift, and the operator&rsquo;s measure of success, then writes the confirmed values back to Dynamics 365.
+      </div>
+    </div>
+    <div class="intv-foot" id="intvFoot">
+      <button class="intv-btn ghost" id="previewPlaybook" type="button">Preview Playbook</button>
+      <button class="intv-btn primary" id="addToSprint" type="button">Add to Sprint</button>
+    </div>
+    <div class="intv-success" id="intvSuccess" hidden>
+      Impact Quantification Playbook added to the Q3 Tender Conversion Sprint. Applied across the Propose-stage pipeline. First performance review in 14 days.
+    </div>
+  </aside>
+
+  <script>
+window.__BARCHETTA_SAMPLE_CSV__ = "opportunity_id,account_name,owner_name,d365_stage,status,created_on,estimated_revenue,actual_close_date,last_activity_date,next_step\nPUR-2001,Meridian Gulf Operating,Avery Chen,Screening,Open,2026-05-20,4200000,,2026-06-10,Screen against installed base\nPUR-2002,Ridgeline Permian Resources,Jordan Miles,Screening,Open,2026-05-22,6800000,,2026-06-11,Review basin activity signals\nPUR-2003,Saltgrass Exploration,Priya Natarajan,Screening,Open,2026-05-24,3500000,,2026-06-12,Confirm operator contacts\nPUR-2004,Karst Basin Energy,Sam Okafor,Screening,Open,2026-05-26,7400000,,2026-06-13,Qualify pursuit interest\nPUR-2005,NorthCape Petroleum,Avery Chen,Screening,Open,2026-05-28,5100000,,2026-06-14,Review ChampionX install footprint\nPUR-2006,Blue Mesa Energy Partners,Jordan Miles,Screening,Open,2026-05-30,6200000,,2026-06-15,Screen rig schedule fit\nPUR-2007,Delta Verde Petroleum,Priya Natarajan,Screening,Open,2026-06-01,4800000,,2026-06-16,Assess tender pipeline fit\nPUR-2008,Ironwood E&P,Sam Okafor,Screening,Open,2026-06-02,5900000,,2026-06-17,Review farm-in signals\nPUR-1001,Coastal Bend Operating,Avery Chen,Qualify Pursuit,Open,2026-02-12,18500000,,2026-06-05,Confirm well program scope\nPUR-1005,Highplains Operating Co,Avery Chen,Qualify Pursuit,Open,2026-02-15,9200000,,2026-06-06,Bid / no-bid review\nPUR-1010,Stonebreak Resources,Jordan Miles,Qualify Pursuit,Open,2026-03-14,7600000,,2026-06-07,Map operator stakeholders\nPUR-1014,Gulf Crest Operating,Jordan Miles,Qualify Pursuit,Open,2026-04-06,6300000,,2026-06-08,Confirm rig window\nPUR-1017,Norrland Offshore AB,Avery Chen,Qualify Pursuit,Open,2026-04-20,11800000,,2026-06-09,Pre-tender technical clarification\nPUR-1020,Palmetto Basin Energy,Sam Okafor,Qualify Pursuit,Open,2026-05-02,8100000,,2026-06-10,Identify decision criteria\nPUR-1023,Atlas Deepwater Partners,Priya Natarajan,Qualify Pursuit,Open,2026-05-16,14400000,,2026-06-11,Confirm evaluation timeline\nPUR-2031,Caprock Ridge Resources,Sam Okafor,Qualify Pursuit,Open,2026-05-18,9700000,,2026-06-12,Align GeoUnit resources\nPUR-2032,Sandhill Petroleum,Priya Natarajan,Qualify Pursuit,Open,2026-05-21,12300000,,2026-06-13,Scope integrated services fit\nPUR-1002,Meridian Gulf Operating,Jordan Miles,Tender Response,Open,2026-02-18,16800000,,2026-06-05,\nPUR-1006,Corsair Offshore Energy,Jordan Miles,Tender Response,Open,2026-02-21,19600000,,2026-06-06,\nPUR-1009,Ridgeline Permian Resources,Avery Chen,Tender Response,Open,2026-03-10,22600000,,2026-06-07,\nPUR-1012,Karst Basin Energy,Sam Okafor,Tender Response,Open,2026-03-25,14400000,,2026-06-08,\nPUR-1015,Bluefin Offshore,Priya Natarajan,Tender Response,Open,2026-04-11,33400000,,2026-06-09,\nPUR-1019,NorthCape Petroleum,Priya Natarajan,Tender Response,Open,2026-04-29,23600000,,2026-06-10,\nPUR-1022,Delta Verde Petroleum,Jordan Miles,Tender Response,Open,2026-05-12,28400000,,2026-06-11,Quantify NPT impact for win theme\nPUR-1025,Atlas Deepwater Partners,Avery Chen,Tender Response,Open,2026-05-24,31200000,,2026-06-12,Draft technical response\nPUR-2033,Ironwood E&P,Sam Okafor,Tender Response,Open,2026-05-27,19800000,,2026-06-13,Validate cementing scope\nPUR-1003,Coastal Bend Operating,Priya Natarajan,Negotiate,Open,2026-02-02,26000000,,2026-06-09,Align on commercial terms\nPUR-1007,Norrland Offshore AB,Priya Natarajan,Negotiate,Open,2026-03-01,21000000,,2026-06-10,Schedule BAFO review\nPUR-1011,Blue Mesa Energy Partners,Priya Natarajan,Negotiate,Open,2026-03-19,24600000,,2026-06-11,Finalize execution plan\nPUR-1016,Gulf Crest Operating,Sam Okafor,Negotiate,Open,2026-04-15,18200000,,2026-06-12,Confirm mobilization window\nPUR-1021,Caprock Ridge Resources,Avery Chen,Negotiate,Open,2026-05-07,16800000,,2026-06-13,Review contract exceptions\nPUR-1008,Sandhill Petroleum,Sam Okafor,Close,Lost,2026-03-04,12400000,2026-05-22,2026-05-21,Document loss reason\nPUR-1024,Highplains Operating Co,Sam Okafor,Close,Lost,2026-05-20,17600000,2026-06-03,2026-06-02,Document loss reason\nPUR-2041,Coastal Bend Operating,Avery Chen,Mobilize,Open,2026-04-01,0,,2026-06-14,Mobilization kickoff scheduled\nPUR-2042,Meridian Gulf Operating,Sam Okafor,Mobilize,Open,2026-04-10,0,,2026-06-15,Crew and equipment staging\nPUR-2043,Bluefin Offshore,Jordan Miles,Mobilize,Open,2026-04-18,0,,2026-06-16,HSE onboarding\nPUR-2044,Norrland Offshore AB,Avery Chen,Mobilize,Open,2026-04-25,0,,2026-06-17,Baseline telemetry setup\nPUR-2045,Palmetto Basin Energy,Sam Okafor,Mobilize,Open,2026-05-05,0,,2026-06-18,First job readiness check\nPUR-2051,Meridian Gulf Operating,Sam Okafor,Service,Open,2026-03-15,0,,2026-06-14,Review uptime plan metrics\nPUR-2052,Bluefin Offshore,Jordan Miles,Service,Open,2026-03-22,0,,2026-06-15,Expand chemicals program\nPUR-2053,Norrland Offshore AB,Avery Chen,Service,Open,2026-04-02,0,,2026-06-16,Capture performance proof\nPUR-2054,Ridgeline Permian Resources,Priya Natarajan,Service,Open,2026-04-12,0,,2026-06-17,Plan account review\nPUR-1004,Meridian Gulf Operating,Sam Okafor,Close,Won,2026-02-09,12800000,2026-05-15,2026-06-01,Plan service attach review\nPUR-1013,Norrland Offshore AB,Avery Chen,Close,Won,2026-04-01,11200000,2026-05-29,2026-06-02,Identify cross-sell — artificial lift\nPUR-1018,Bluefin Offshore,Jordan Miles,Close,Won,2026-04-24,14600000,2026-06-01,2026-06-03,Schedule uptime plan review\nPUR-2061,Blue Mesa Energy Partners,Priya Natarajan,Close,Won,2026-05-10,9500000,2026-06-05,2026-06-08,Plan expansion review\n";
+  </script>
+  <script>
+"use strict";
+
+const REQUIRED_FIELDS = [
+  "opportunity_id",
+  "account_name",
+  "owner_name",
+  "d365_stage",
+  "status",
+  "created_on",
+  "estimated_revenue",
+  "actual_close_date",
+  "last_activity_date",
+  "next_step",
+];
+
+const POPULATED_GOOD = 90;
+const POPULATED_WEAK = 50;
+
+const BOWTIE_STAGES = [
+  // SLB display skin over WbD canonical keys (math unchanged):
+  // Target=Awareness · Pursue=Education · Propose=Selection · Award=Commit
+  // Mobilize=Onboard/Impact(1) · Retain=Recurring Impact · Expand=Growth
+  { key: "Target",   height: 196, basis: "count", goal: 10,        unit: "Qualified targets" },
+  { key: "Pursue",   height: 176, basis: "count", goal: 12,        unit: "Active pursuits" },
+  { key: "Propose",  height: 158, basis: "count", goal: 12,        unit: "Live tenders" },
+  { key: "Award",    height: 142, waist: true, basis: "value", goal: 140000000, unit: "Awarded" },
+  { key: "Mobilize", height: 158, basis: "count", goal: 6,         unit: "Mobilizations" },
+  { key: "Retain",   height: 176, basis: "count", goal: 5,         unit: "Service plans" },
+  { key: "Expand",   height: 196, basis: "value", goal: 42000000,  unit: "Cross-sell" },
+];
+
+const AS_OF = new Date();
+
+const IMPACT_SPRINTS = [
+  {
+    sprint_name: "Q3 Tender Conversion Sprint",
+    target_stage: "Propose",
+    primary_metric: "Tender → Award Win Rate",
+    baseline: 28, current: 31, target: 36,
+    evidence_level: "L4 Behavior Changed",
+    decision: "Tune",
+    interventions: ["Pursuit Health Agent", "D365 Tender Exit Criteria", "Pursuit Review Dashboard"],
+  },
+  {
+    sprint_name: "Forecast Confidence Sprint",
+    target_stage: "Award",
+    primary_metric: "Forecast Accuracy — Committed Awards",
+    baseline: 71, current: 80, target: 82,
+    evidence_level: "L5 Outcome Moved",
+    decision: "Scale",
+    interventions: ["Forecast Analyst Agent", "Award Review Dashboard"],
+  },
+  {
+    sprint_name: "Reorder & Renewal Risk Sprint",
+    target_stage: "Expand",
+    primary_metric: "ChampionX Reorder Save Rate",
+    baseline: 78, current: 79, target: 85,
+    evidence_level: "L2 Adopted",
+    decision: "Continue",
+    interventions: ["Retention Agent", "ChampionX Reorder Signal Integration"],
+  },
+];
+
+function decisionClass(decision) {
+  const d = String(decision).toLowerCase();
+  if (d === "scale") return "good";
+  if (d === "tune") return "warn";
+  return "neutral";
+}
+
+function sprintProgress(sp) {
+  const span = sp.target - sp.baseline;
+  if (!span) return 0;
+  const pct = ((sp.current - sp.baseline) / span) * 100;
+  return Math.max(0, Math.min(100, Math.round(pct)));
+}
+
+// Technology Impact Ledger (Step 3) — intervention evidence layer, inline for now.
+const INTERVENTIONS = [
+  { name: "Pursuit Health Agent", sprint: "Q3 Tender Conversion Sprint", type: "Agent",
+    mechanism: "Earlier risk detection improves bid/no-bid discipline and tender qualification",
+    adoption: "76%", trust: "61%", status: "Active", evidence: "L4 Behavior Changed" },
+  { name: "Dialogue Copilot", sprint: "Q3 Tender Conversion Sprint", type: "Agent",
+    mechanism: "Prompts pursuit teams to quantify operator impact — NPT, uptime, $/BOE — in conversation and captures it in Dynamics 365",
+    adoption: "—", trust: "—", status: "Active", evidence: "L1 Deployed" },
+  { name: "D365 Tender Exit Criteria", sprint: "Q3 Tender Conversion Sprint", type: "CRM Configuration",
+    mechanism: "Prevents tender submission without a quantified win theme",
+    adoption: "95%", trust: "High", status: "Active", evidence: "L4 Behavior Changed" },
+  { name: "Pursuit Review Dashboard", sprint: "Q3 Tender Conversion Sprint", type: "Analytics",
+    mechanism: "Creates earlier pursuit-review coaching intervention",
+    adoption: "68%", trust: "Medium", status: "Tune", evidence: "L3 Trusted" },
+  { name: "Forecast Analyst Agent", sprint: "Forecast Confidence Sprint", type: "Agent",
+    mechanism: "Identifies forecast risk and confidence gaps across committed awards",
+    adoption: "88%", trust: "75%", status: "Scale", evidence: "L5 Outcome Moved" },
+  { name: "Award Review Dashboard", sprint: "Forecast Confidence Sprint", type: "Analytics",
+    mechanism: "Improves award review inspection cadence",
+    adoption: "82%", trust: "High", status: "Active", evidence: "L4 Behavior Changed" },
+  { name: "Retention Agent", sprint: "Reorder & Renewal Risk Sprint", type: "Agent",
+    mechanism: "Flags reorder and renewal risk earlier",
+    adoption: "40%", trust: "Medium", status: "Fix Adoption", evidence: "L2 Adopted" },
+  { name: "ChampionX Reorder Signal Integration", sprint: "Reorder & Renewal Risk Sprint", type: "Data Integration",
+    mechanism: "Brings reorder cadence and service signals into the renewal workflow",
+    adoption: "55%", trust: "Medium", status: "Active", evidence: "L2 Adopted" },
+];
+
+const LEDGER_TYPES = ["All", "Agent", "CRM Configuration", "Analytics", "Data Integration"];
+let ledgerFilter = "All";
+
+// Subtle status -> tag-style mapping (minimal color).
+function statusClass(status) {
+  const s = String(status).toLowerCase();
+  if (s === "scale") return "good";
+  if (s === "tune") return "warn";
+  if (s === "fix adoption") return "bad";
+  return "neutral"; // Active and anything else
+}
+
+// Evidence Timeline (Step 4) — proof sequence, inline for now.
+// Language stays contribution-signal, not causal claims.
+const EVIDENCE = [
+  { level: "L0 Defined", week: "Week 1", confidence: "High",
+    observation: "Metric, target, cohort, and hypothesis locked." },
+  { level: "L1 Deployed", week: "Week 2", confidence: "High",
+    observation: "Pursuit Health Agent, tender exit criteria, and pursuit review dashboard deployed." },
+  { level: "L2 Adopted", week: "Week 4", confidence: "High",
+    observation: "Pursuit Health Agent reached 76% weekly active usage." },
+  { level: "L3 Trusted", week: "Week 5", confidence: "Medium",
+    observation: "61% of recommendations accepted or acted on." },
+  { level: "L4 Behavior Changed", week: "Week 6", confidence: "High",
+    observation: "Quantified win-theme completeness improved from 52% to 81%." },
+  { level: "L5 Outcome Moved", week: "Week 10", confidence: "Medium",
+    observation: "Tender → Award conversion improved from 28% to 31% against a 36% target." },
+];
+
+const EVIDENCE_SUMMARY = {
+  currentLevel: "L4 Behavior Changed",
+  outcomeStatus: "Trending, not yet fully achieved",
+  decision: "Tune pursuit review cadence and continue sprint",
+};
+
+function confidenceClass(c) {
+  return String(c).toLowerCase() === "high" ? "good" : "neutral";
+}
+
+function parseCSV(text) {
+  const rows = [];
+  let row = [];
+  let field = "";
+  let inQuotes = false;
+  text = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { field += '"'; i++; }
+        else { inQuotes = false; }
+      } else { field += c; }
+    } else if (c === '"') {
+      inQuotes = true;
+    } else if (c === ",") {
+      row.push(field); field = "";
+    } else if (c === "\n") {
+      row.push(field); field = ""; rows.push(row); row = [];
+    } else {
+      field += c;
+    }
+  }
+  if (field !== "" || row.length > 0) { row.push(field); rows.push(row); }
+  while (rows.length && rows[rows.length - 1].every((v) => v.trim() === "")) rows.pop();
+  if (rows.length === 0) return { columns: [], records: [] };
+  const columns = rows[0].map((h) => h.trim());
+  const records = rows.slice(1).map((r) => {
+    const obj = {};
+    columns.forEach((col, idx) => { obj[col] = (r[idx] ?? "").trim(); });
+    return obj;
+  });
+  return { columns, records };
+}
+
+function isBlank(v) {
+  if (v === null || v === undefined) return true;
+  const s = String(v).trim().toLowerCase();
+  return s === "" || s === "nan" || s === "none" || s === "null";
+}
+
+function fmtMoney(n) {
+  if (!isFinite(n) || n === 0) return "$0";
+  if (n >= 1e6) return "$" + (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M";
+  if (n >= 1e3) return "$" + (n / 1e3).toFixed(0) + "k";
+  return "$" + Math.round(n).toLocaleString();
+}
+
+function ageInDays(dateStr) {
+  if (isBlank(dateStr)) return null;
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return null;
+  return Math.max(0, Math.round((AS_OF - d) / 86400000));
+}
+
+function buildValidation(data) {
+  const total = data.records.length;
+  const colSet = new Set(data.columns);
+  return REQUIRED_FIELDS.map((field) => {
+    const present = colSet.has(field);
+    let populatedPct = 0;
+    if (present && total > 0) {
+      let filled = 0;
+      for (const rec of data.records) if (!isBlank(rec[field])) filled++;
+      populatedPct = Math.round((1000 * filled) / total) / 10;
+    }
+    let status;
+    if (!present) status = "bad";
+    else if (populatedPct >= POPULATED_GOOD) status = "good";
+    else if (populatedPct >= POPULATED_WEAK) status = "warn";
+    else status = "bad";
+    return { field, present, populatedPct, status };
+  });
+}
+
+function calculateScore(validation) {
+  const totalFields = REQUIRED_FIELDS.length;
+  const presentCount = validation.filter((v) => v.present).length;
+  const presentScore = (100 * presentCount) / totalFields;
+  const avgPopulated = validation.reduce((s, v) => s + v.populatedPct, 0) / totalFields;
+  const score = Math.round((0.5 * presentScore + 0.5 * avgPopulated) * 10) / 10;
+  let band, level;
+  if (score >= 85) { band = "Ready for Bowtie prototype"; level = "good"; }
+  else if (score >= 70) { band = "Usable, but weak spots"; level = "warn"; }
+  else { band = "Not ready yet"; level = "bad"; }
+  const missingRequired = totalFields - presentCount;
+  const warnings = validation.filter((v) => v.present && v.status !== "good").length;
+  return {
+    score,
+    presentScore: Math.round(presentScore * 10) / 10,
+    avgPopulated: Math.round(avgPopulated * 10) / 10,
+    presentCount, totalFields, missingRequired, warnings,
+    band, level,
+  };
+}
+
+function mapToBowtie(rec) {
+  const stage = String(rec.d365_stage || "").trim().toLowerCase();
+  const status = String(rec.status || "").trim().toLowerCase();
+  if (stage === "screening") return "Target";
+  if (stage === "qualify pursuit") return "Pursue";
+  if (stage === "tender response") return "Propose";
+  if (stage === "negotiate") return "Award";
+  if (stage === "mobilize") return "Mobilize";
+  if (stage === "service") return "Retain";
+  if (stage === "close") {
+    if (status === "won") return "Expand";
+    if (status === "lost") return "Award";
+    return "Award";
+  }
+  return null;
+}
+
+function aggregateBowtie(data) {
+  const buckets = {};
+  for (const s of BOWTIE_STAGES) {
+    buckets[s.key] = { count: 0, value: 0, ageSum: 0, ageN: 0, missing: 0, closedLost: 0 };
+  }
+  for (const rec of data.records) {
+    const key = mapToBowtie(rec);
+    if (!key || !buckets[key]) continue;
+    const b = buckets[key];
+    b.count++;
+    const rev = parseFloat(String(rec.estimated_revenue || "").replace(/[^0-9.\-]/g, ""));
+    if (isFinite(rev)) b.value += rev;
+    const age = ageInDays(rec.created_on);
+    if (age !== null) { b.ageSum += age; b.ageN++; }
+    if (isBlank(rec.next_step) || isBlank(rec.last_activity_date)) b.missing++;
+    if (String(rec.d365_stage).toLowerCase() === "close" &&
+        String(rec.status).toLowerCase() === "lost") b.closedLost++;
+  }
+  return BOWTIE_STAGES.map((s) => {
+    const b = buckets[s.key];
+    const avgAge = b.ageN ? Math.round(b.ageSum / b.ageN) : null;
+    const missPct = b.count ? b.missing / b.count : 0;
+    let health, healthLabel;
+    if (b.count === 0) { health = "neutral"; healthLabel = "No data"; }
+    else if (b.missing === 0) { health = "good"; healthLabel = "Healthy"; }
+    else if (missPct > 0.40) { health = "bad"; healthLabel = "At risk"; }
+    else { health = "warn"; healthLabel = "Watch"; }
+    const actual = s.basis === "value" ? b.value : b.count;
+    const attainment = s.goal > 0 ? Math.round((actual / s.goal) * 100) : 0;
+    return {
+      key: s.key, height: s.height, waist: !!s.waist,
+      count: b.count, value: b.value, avgAge,
+      missing: b.missing, missPct, closedLost: b.closedLost,
+      health, healthLabel,
+      basis: s.basis, goal: s.goal, unit: s.unit, actual, attainment,
+    };
+  });
+}
+
+function setText(id, val) { document.getElementById(id).textContent = val; }
+
+function renderDataHub(fileName, data, validation, score) {
+  const pill = document.getElementById("readinessPill");
+  pill.className = "readiness-pill " + score.level;
+  pill.textContent = score.band;
+
+  const ring = document.getElementById("scoreRing");
+  const ringColor =
+    score.level === "good" ? "var(--good)" :
+    score.level === "warn" ? "var(--warn)" : "var(--bad)";
+  ring.style.background =
+    "conic-gradient(" + ringColor + " " + (score.score * 3.6) + "deg, var(--line) 0deg)";
+  setText("scoreNum", score.score);
+  setText("presentLine", score.presentCount + " / " + score.totalFields);
+  setText("avgLine", score.avgPopulated + "%");
+
+  setText("kFile", fileName);
+  setText("kRows", data.records.length.toLocaleString());
+  setText("kCols", data.columns.length.toLocaleString());
+  setText("kMissing", score.missingRequired);
+  setText("kWarn", score.warnings);
+  document.getElementById("kStatus").textContent =
+    score.level === "good" ? "Ready" :
+    score.level === "warn" ? "Usable" : "Not ready";
+
+  const body = document.getElementById("validationBody");
+  body.innerHTML = "";
+  const label = { good: "Pass", warn: "Warn", bad: "Fail" };
+  for (const r of validation) {
+    const tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td class="field-name">' + r.field + "</td>" +
+      "<td>" + (r.present ? "Yes" : "No") + "</td>" +
+      '<td><div class="pop-cell">' +
+        '<div class="pop-bar"><span class="fill-' + r.status + '" style="width:' + r.populatedPct + '%"></span></div>' +
+        '<span class="pop-val">' + r.populatedPct + "%</span>" +
+      "</div></td>" +
+      '<td class="ta-r"><span class="tag ' + r.status + '">' + label[r.status] + "</span></td>";
+    body.appendChild(tr);
+  }
+  document.getElementById("vtableMeta").textContent =
+    score.presentCount + " of " + score.totalFields + " fields present";
+}
+
+// Small in-card pill only. Full sprint detail lives in the Active Impact Sprints panel.
+function sprintOverlayHtml(sp) {
+  if (!sp) return "";
+  return '<div class="sprint-chip"><span class="sc-dot ' + decisionClass(sp.decision) +
+    '"></span><span class="sc-label">Sprint &middot; ' + sp.decision + "</span></div>";
+}
+
+function renderBowtie(stages) {
+  const row = document.getElementById("bowtie-row");
+  row.innerHTML = "";
+
+  const label = { good: "Healthy", warn: "Watch", bad: "At risk", neutral: "No data" };
+
+  const sprintByStage = {};
+  for (const sp of IMPACT_SPRINTS) sprintByStage[sp.target_stage] = sp;
+
+  stages.forEach((s, i) => {
+    const left = ((i + 0.5) / stages.length) * 100;
+    const sprint = sprintByStage[s.key] || null;
+
+    const card = document.createElement("div");
+    card.className = "stage" + (s.waist ? " waist" : "") +
+      (s.count === 0 ? " empty" : "") + (sprint ? " has-sprint" : "");
+    card.style.left = left + "%";
+
+    const ageStr = s.avgAge === null ? "—" : s.avgAge + "d";
+    const lostStr = s.closedLost > 0 ? '<div class="stage-metric"><span>Closed lost</span><strong>' + s.closedLost + "</strong></div>" : "";
+
+    // Veeva-style attainment ring: conversion vs goal
+    const deg = Math.max(0, Math.min(100, s.attainment)) * 3.6;
+    const ringColor = s.count === 0 ? "#c2cad6" :
+      s.health === "bad"  ? "var(--bad)"  :
+      s.health === "warn" ? "var(--warn)" : "#a9b7c6";
+    const actualStr = s.basis === "value" ? fmtMoney(s.actual) : String(s.actual);
+    const goalStr = s.basis === "value" ? fmtMoney(s.goal) : String(s.goal);
+
+    card.innerHTML =
+      '<div class="stage-top">' +
+        '<span class="stage-name">' + s.key + "</span>" +
+      "</div>" +
+      '<div class="stage-ring-wrap">' +
+        '<div class="stage-ring" style="background:conic-gradient(' + ringColor + " " + deg + "deg, #e8edf3 0deg)\">" +
+          '<div class="stage-ring-in"><span class="stage-ring-num">' + s.attainment + "%</span></div>" +
+        "</div>" +
+      "</div>" +
+      '<div class="stage-goal"><b>' + actualStr + "</b> vs " + goalStr + ' <span>' + s.unit + "</span></div>" +
+      '<div class="stage-metrics">' +
+        '<div class="stage-metric"><span>Pipeline</span><strong>' + fmtMoney(s.value) + "</strong></div>" +
+        '<div class="stage-metric"><span>Avg age</span><strong>' + ageStr + "</strong></div>" +
+        lostStr +
+        '<span class="stage-pill tag ' + s.health + '">' + label[s.health] + "</span>" +
+      "</div>" +
+      sprintOverlayHtml(sprint);
+    row.appendChild(card);
+  });
+}
+
+function renderSprintsPanel() {
+  const body = document.getElementById("sprintsList");
+  if (!body) return;
+  body.innerHTML = "";
+  for (const sp of IMPACT_SPRINTS) {
+    const dc = decisionClass(sp.decision);
+    const prog = sprintProgress(sp);
+    const n = sp.interventions.length;
+    const el = document.createElement("div");
+    el.className = "sp-card";
+    el.innerHTML =
+      '<div class="sp-head">' +
+        '<div class="sp-name">' + sp.sprint_name + "</div>" +
+        '<span class="tag ' + dc + '">' + sp.decision + "</span>" +
+      "</div>" +
+      '<div class="sp-stage">Stage &middot; <b>' + sp.target_stage + "</b></div>" +
+      (sp.impactDiscovery ? '<div class="sp-badge-row"><span class="sp-badge">Impact Discovery &middot; Active</span></div>' : "") +
+      '<div class="sp-metric">' + sp.primary_metric + "</div>" +
+      '<div class="sp-prog">' +
+        '<span class="bct"><b>' + sp.baseline + '%</b><i>base</i></span>' +
+        '<span class="arw">&rarr;</span>' +
+        '<span class="bct cur"><b>' + sp.current + '%</b><i>now</i></span>' +
+        '<span class="arw">&rarr;</span>' +
+        '<span class="bct"><b>' + sp.target + '%</b><i>target</i></span>' +
+      "</div>" +
+      '<div class="sp-bar"><span style="width:' + prog + '%"></span></div>' +
+      '<div class="sp-foot">' +
+        '<span class="ev">' + sp.evidence_level + "</span>" +
+        '<span class="iv">' + n + " intervention" + (n === 1 ? "" : "s") + "</span>" +
+      "</div>";
+    body.appendChild(el);
+  }
+}
+
+function renderLedger() {
+  const body = document.getElementById("ledgerBody");
+  if (!body) return;
+  body.innerHTML = "";
+  const rows = INTERVENTIONS.filter(
+    (iv) => ledgerFilter === "All" || iv.type === ledgerFilter
+  );
+
+  if (rows.length === 0) {
+    body.innerHTML = '<tr><td class="lg-empty" colspan="7">No interventions of this type.</td></tr>';
+    return;
+  }
+
+  for (const iv of rows) {
+    const adoptN = parseInt(iv.adoption, 10) || 0;
+    const tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td><div class="lg-name">' + iv.name + "</div>" +
+        '<span class="type-pill">' + iv.type + "</span></td>" +
+      '<td class="lg-sprint">' + iv.sprint + "</td>" +
+      '<td class="lg-mech">' + iv.mechanism + "</td>" +
+      '<td><div class="lg-adopt"><span class="lg-bar"><span style="width:' + adoptN + '%"></span></span>' +
+        "<b>" + iv.adoption + "</b></div></td>" +
+      '<td class="lg-trust">' + iv.trust + "</td>" +
+      '<td class="lg-ev">' + iv.evidence + "</td>" +
+      '<td class="ta-r"><span class="tag ' + statusClass(iv.status) + '">' + iv.status + "</span></td>";
+    body.appendChild(tr);
+  }
+}
+
+function setupLedger() {
+  const seg = document.getElementById("ledgerFilter");
+  if (!seg) return;
+  seg.addEventListener("click", (e) => {
+    const btn = e.target.closest(".seg-btn");
+    if (!btn) return;
+    ledgerFilter = btn.dataset.type;
+    seg.querySelectorAll(".seg-btn").forEach((b) => b.classList.toggle("active", b === btn));
+    renderLedger();
+  });
+  renderLedger();
+}
+
+const STAGE_FLOW = {
+  Target: "Screened → Qualified target",
+  Pursue: "Target → Active pursuit",
+  Propose: "Pursuit → Tender submitted",
+  Award: "Tender → Award",
+  Mobilize: "Award → Mobilized",
+  Retain: "Mobilized → Active service plan",
+  Expand: "Service → Cross-sell",
+};
+
+function setupFlyout() {
+  const scrim = document.getElementById("flyoutScrim");
+  const flyout = document.getElementById("stageFlyout");
+  const row = document.getElementById("bowtie-row");
+  const ctx = document.getElementById("flyStageCtx");
+  if (!scrim || !flyout || !row) return;
+
+  const open = (stageName) => {
+    if (ctx && stageName) {
+      const flow = STAGE_FLOW[stageName] || "";
+      ctx.innerHTML = stageName + (flow ? " (" + flow + ")" : "");
+    }
+    scrim.classList.add("open");
+    flyout.classList.add("open");
+  };
+  const close = () => {
+    scrim.classList.remove("open");
+    flyout.classList.remove("open");
+  };
+
+  row.addEventListener("click", (e) => {
+    const card = e.target.closest(".stage");
+    if (!card) return;
+    const name = card.querySelector(".stage-name");
+    open(name ? name.textContent.trim() : "");
+  });
+
+  const closeBtn = document.getElementById("flyoutClose");
+  if (closeBtn) closeBtn.addEventListener("click", close);
+  scrim.addEventListener("click", close);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+}
+
+function setupIntervention() {
+  const scrim = document.getElementById("intvScrim");
+  const drawer = document.getElementById("intvDrawer");
+  if (!scrim || !drawer) return;
+  const open = () => { scrim.classList.add("open"); drawer.classList.add("open"); };
+  const close = () => { scrim.classList.remove("open"); drawer.classList.remove("open"); };
+
+  const trigger = document.getElementById("createNextStep");
+  if (trigger) trigger.addEventListener("click", open);
+  const closeBtn = document.getElementById("intvClose");
+  if (closeBtn) closeBtn.addEventListener("click", close);
+  scrim.addEventListener("click", close);
+
+  const prev = document.getElementById("previewPlaybook");
+  const prevBlock = document.getElementById("intvPreview");
+  if (prev && prevBlock) prev.addEventListener("click", () => { prevBlock.hidden = !prevBlock.hidden; });
+
+  const add = document.getElementById("addToSprint");
+  if (add) add.addEventListener("click", () => {
+    const sp = IMPACT_SPRINTS.find((s) => s.sprint_name === "Q2 Pipeline Conversion Sprint");
+    if (sp && !sp.impactDiscovery) {
+      sp.interventions.push("Impact Discovery Playbook");
+      sp.impactDiscovery = true;
+      renderSprintsPanel();
+    }
+    const foot = document.getElementById("intvFoot");
+    const ok = document.getElementById("intvSuccess");
+    if (foot) foot.hidden = true;
+    if (ok) ok.hidden = false;
+  });
+}
+
+function setupModes() {
+  const modes = document.getElementById("wsModes");
+  const operator = document.getElementById("modeOperator");
+  const setup = document.getElementById("modeSetup");
+  if (!modes || !operator || !setup) return;
+  const tabs = modes.querySelectorAll(".mode-tab");
+  const show = (mode) => {
+    const isOp = mode === "operator";
+    operator.hidden = !isOp;
+    setup.hidden = isOp;
+    tabs.forEach((t) => t.classList.toggle("active", t.dataset.mode === mode));
+  };
+  modes.addEventListener("click", (e) => {
+    const t = e.target.closest(".mode-tab");
+    if (t) show(t.dataset.mode);
+  });
+  const link = document.getElementById("viewSetupLink");
+  if (link) link.addEventListener("click", () => show("setup"));
+  show("operator"); // Operator Workspace is the default story
+}
+
+function renderEvidence() {
+  const setIf = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  setIf("evCurrentLevel", EVIDENCE_SUMMARY.currentLevel);
+  setIf("evOutcomeStatus", EVIDENCE_SUMMARY.outcomeStatus);
+  setIf("evDecision", EVIDENCE_SUMMARY.decision);
+
+  const root = document.getElementById("evidenceTimeline");
+  if (!root) return;
+  root.innerHTML = "";
+  for (const e of EVIDENCE) {
+    const isCurrent = e.level === EVIDENCE_SUMMARY.currentLevel;
+    const item = document.createElement("div");
+    item.className = "tl-item" + (isCurrent ? " current" : "");
+    item.innerHTML =
+      '<span class="tl-dot"></span>' +
+      '<div class="tl-head">' +
+        '<span class="tl-level">' + e.level + "</span>" +
+        '<span class="tl-week">' + e.week + "</span>" +
+        '<span class="tag ' + confidenceClass(e.confidence) + ' tl-conf">' + e.confidence + " confidence</span>" +
+        (isCurrent ? '<span class="tl-cur">Current</span>' : "") +
+      "</div>" +
+      '<div class="tl-obs">' + e.observation + "</div>";
+    root.appendChild(item);
+  }
+}
+
+// --- Lifecycle Mapping + Data Radar (Step 5) ---
+const LIFECYCLE_MAP = [
+  { object: "Opportunity", field: "d365_stage", condition: "Qualify Pursuit", stage: "Pursue",
+    dateAnchor: "created_on", valueField: "estimated_revenue", ownerField: "owner_name",
+    lost: "status = Lost", stalled: "60 days" },
+  { object: "Opportunity", field: "d365_stage", condition: "Tender Response", stage: "Propose",
+    dateAnchor: "created_on", valueField: "estimated_revenue", ownerField: "owner_name",
+    lost: "status = Lost", stalled: "90 days" },
+  { object: "Opportunity", field: "d365_stage", condition: "Negotiate", stage: "Award",
+    dateAnchor: "created_on", valueField: "estimated_revenue", ownerField: "owner_name",
+    lost: "status = Lost", stalled: "45 days" },
+  { object: "Opportunity", field: "d365_stage + status", condition: "Close + Won", stage: "Expand",
+    dateAnchor: "actual_close_date", valueField: "estimated_revenue", ownerField: "owner_name",
+    lost: "not applicable", stalled: "not applicable" },
+  { object: "Opportunity", field: "d365_stage + status", condition: "Close + Lost", stage: "Award",
+    dateAnchor: "actual_close_date", valueField: "estimated_revenue", ownerField: "owner_name",
+    lost: "status = Lost", stalled: "not applicable" },
+];
+
+const ACCEPTED_STAGES = ["screening", "qualify pursuit", "tender response", "negotiate", "mobilize", "service", "close"];
+
+const STAGE_STALLED_DAYS = (function () {
+  const m = {};
+  for (const row of LIFECYCLE_MAP) {
+    const days = parseInt(row.stalled, 10);
+    if (row.field === "d365_stage" && isFinite(days)) m[row.condition.toLowerCase()] = days;
+  }
+  return m;
+})();
+
+function renderLifecycleMap() {
+  const body = document.getElementById("lcmapBody");
+  if (!body) return;
+  body.innerHTML = "";
+  for (const r of LIFECYCLE_MAP) {
+    const tr = document.createElement("tr");
+    tr.innerHTML =
+      "<td>" + r.object + "</td>" +
+      '<td class="mono">' + r.field + "</td>" +
+      "<td>" + r.condition + "</td>" +
+      '<td><span class="lc-stage">' + r.stage + "</span></td>" +
+      '<td class="mono">' + r.dateAnchor + "</td>" +
+      '<td class="mono">' + r.valueField + "</td>" +
+      '<td class="mono">' + r.ownerField + "</td>" +
+      "<td>" + r.lost + "</td>" +
+      "<td>" + r.stalled + "</td>";
+    body.appendChild(tr);
+  }
+}
+
+function computeRadar(data) {
+  const recs = data.records;
+  const cols = new Set(data.columns);
+  const total = recs.length;
+
+  const isClosed = (r) => {
+    const st = String(r.status || "").trim().toLowerCase();
+    const stg = String(r.d365_stage || "").trim().toLowerCase();
+    return st === "won" || st === "lost" || stg === "close";
+  };
+  const openRecs = recs.filter((r) => !isClosed(r));
+  const closedRecs = recs.filter(isClosed);
+  const lostRecs = recs.filter((r) => String(r.status || "").trim().toLowerCase() === "lost");
+
+  const sev = (count, denom) => {
+    if (count === 0) return "low";
+    const ratio = denom > 0 ? count / denom : 0;
+    if (ratio >= 0.4) return "high";
+    if (ratio >= 0.15) return "medium";
+    return "low";
+  };
+
+  const items = [];
+
+  let mda = 0;
+  for (const r of openRecs) if (isBlank(r.created_on)) mda++;
+  for (const r of closedRecs) if (isBlank(r.actual_close_date)) mda++;
+  items.push({ name: "Missing date anchors", value: mda, na: false, severity: sev(mda, total),
+    exp: "Records missing the date anchor needed to place them on the Bowtie and measure velocity.",
+    action: "Add stage-entered date anchors for better velocity." });
+
+  let mo = 0;
+  for (const r of recs) if (isBlank(r.owner_name)) mo++;
+  items.push({ name: "Missing owner", value: mo, na: false, severity: sev(mo, total),
+    exp: "Records without an owner can't be held to a person or coached.",
+    action: "Add owner_name to support accountability." });
+
+  let ums = 0;
+  for (const r of recs) {
+    const s = String(r.d365_stage || "").trim().toLowerCase();
+    if (!ACCEPTED_STAGES.includes(s)) ums++;
+  }
+  items.push({ name: "Unmapped CRM stage", value: ums, na: false, severity: sev(ums, total),
+    exp: "Mapping gap: stage values outside Qualify, Develop, Propose, Close aren't yet mapped to the Bowtie.",
+    action: "Map this stage before trusting conversion metrics." });
+
+  let mns = 0;
+  for (const r of openRecs) if (isBlank(r.next_step)) mns++;
+  items.push({ name: "Missing next step", value: mns, na: false, severity: sev(mns, openRecs.length),
+    exp: "Open records without a next step weaken stage-health and stalled detection.",
+    action: "Add next steps so stage health stays reliable." });
+
+  let stalled = 0;
+  for (const r of openRecs) {
+    const stg = String(r.d365_stage || "").trim().toLowerCase();
+    const thr = STAGE_STALLED_DAYS[stg];
+    if (!thr) continue;
+    const age = ageInDays(r.created_on);
+    if (age !== null && age > thr) stalled++;
+  }
+  items.push({ name: "Stalled records", value: stalled, na: false, severity: sev(stalled, openRecs.length),
+    exp: "Open records older than their stage stalled threshold may distort stage health.",
+    action: "Review stalled records before interpreting stage health." });
+
+  if (cols.has("disqualification_reason")) {
+    let c = 0;
+    for (const r of lostRecs) if (isBlank(r.disqualification_reason)) c++;
+    items.push({ name: "Closed lost without reason", value: c, na: false, severity: sev(c, lostRecs.length),
+      exp: "Lost records without a reason can't inform loss analysis.",
+      action: "Capture a disqualification reason on lost records." });
+  } else {
+    items.push({ name: "Closed lost without reason", value: null, na: true, severity: "na",
+      exp: "No disqualification_reason field in the loaded file.",
+      action: "Add disqualification_reason to enable loss analysis." });
+  }
+
+  if (cols.has("source_channel")) {
+    let c = 0;
+    for (const r of recs) {
+      const v = String(r.source_channel || "").trim().toLowerCase();
+      if (v === "" || v === "unknown") c++;
+    }
+    items.push({ name: "Unknown source channel", value: c, na: false, severity: sev(c, total),
+      exp: "Records without a known source channel limit channel analysis.",
+      action: "Populate source_channel to enable channel analysis." });
+  } else {
+    items.push({ name: "Unknown source channel", value: null, na: true, severity: "na",
+      exp: "No source_channel field in the loaded file.",
+      action: "Add source_channel to enable channel analysis." });
+  }
+
+  return items;
+}
+
+function renderDataRadar(data) {
+  const grid = document.getElementById("radarGrid");
+  if (!grid) return;
+  grid.innerHTML = "";
+  const sevTag = { high: "bad", medium: "warn", low: "good", na: "neutral" };
+  const sevLabel = { high: "High", medium: "Medium", low: "Low", na: "Not available" };
+  for (const it of computeRadar(data)) {
+    const card = document.createElement("div");
+    card.className = "radar-card sev-" + it.severity;
+    const countHtml = it.na
+      ? '<div class="rc-count na">Not available in file</div>'
+      : '<div class="rc-count">' + it.value + "</div>";
+    card.innerHTML =
+      '<div class="rc-top"><span class="rc-name">' + it.name + "</span>" +
+        '<span class="tag ' + sevTag[it.severity] + '">' + sevLabel[it.severity] + "</span></div>" +
+      countHtml +
+      '<div class="rc-exp">' + it.exp + "</div>" +
+      '<div class="rc-action"><span class="rc-act-label">Action</span> ' + it.action + "</div>";
+    grid.appendChild(card);
+  }
+}
+
+function refresh(fileName, text) {
+  const data = parseCSV(text);
+  if (data.columns.length === 0) return;
+  const validation = buildValidation(data);
+  const score = calculateScore(validation);
+  renderDataHub(fileName, data, validation, score);
+  renderDataRadar(data);
+  renderBowtie(aggregateBowtie(data));
+  renderSprintsPanel();
+}
+
+const EMBEDDED_SAMPLE = window.__BARCHETTA_SAMPLE_CSV__ || null;
+const SAMPLE_NAME = "sample_dynamics_export.csv";
+
+function loadSample() {
+  if (EMBEDDED_SAMPLE) { refresh(SAMPLE_NAME, EMBEDDED_SAMPLE); return; }
+  fetch(SAMPLE_NAME)
+    .then((r) => { if (!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
+    .then((text) => refresh(SAMPLE_NAME, text))
+    .catch(() => { document.getElementById("kFile").textContent = "Upload a CSV to begin"; });
+}
+
+document.getElementById("fileInput").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => refresh(file.name, reader.result);
+  reader.readAsText(file);
+});
+
+renderLifecycleMap();
+loadSample();
+setupLedger();
+renderEvidence();
+setupModes();
+setupFlyout();
+setupIntervention();
+  </script>
+</body>
+</html>
